@@ -45,6 +45,7 @@
             height: auto;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: black;
         }
         
         .btn-primary {
@@ -144,6 +145,21 @@
         .button-group .btn-primary,
         .button-group .btn-secondary {
             margin-top: 0;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #022c22;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -250,45 +266,22 @@
 <script>
     // --- ثوابت وإعدادات أولية ---
     const VIDEO_BASE_URL = "https://raw.githubusercontent.com/BlidaServices/Quranative/refs/heads/main/videos/";
-    const CROSSFADE_DURATION = 0.5;
     
-    // قائمة بأسماء جميع الفيديوهات المتاحة
+    // قائمة بأسماء الفيديوهات المتاحة (مختصرة لتجنب بطء التحميل)
     const availableVideos = [];
-    for (let i = 1; i <= 420; i++) {
+    for (let i = 1; i <= 114; i++) {
         availableVideos.push(`${i}.mp4`);
-        if ((i >= 186 && i <= 202) || (i >= 316 && i <= 320)) availableVideos.push(`${i}.MOV`);
+        availableVideos.push(`${i}.MP4`);
     }
-    const extraVideos = ["1.MP4", "2.MP4", "3.MP4", "10.MP4", "11.MP4", "12.MP4", "31.mp4", "49.MP4", "71.MP4"];
-    extraVideos.forEach(v => { if(!availableVideos.includes(v)) availableVideos.push(v); });
     
     // --- القراء ---
     const reciters = [
         { id: "Yasser_Ad-Dussary_128kbps", name: "ياسر الدوسري" },
         { id: "MaherAlMuaiqly128kbps", name: "ماهر المعيقلي" },
-        { id: "Abu_Bakr_Ash-Shaatree_128kbps", name: "أبوبكر الشاطري" },
-        { id: "Ibrahim_Akhdar_32kbps", name: "ابراهيم الاخضر" },
-        { id: "Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net", name: "أحمد العجمي" },
-        { id: "Ayman_Sowaid_64kbps", name: "أيمن رشدي سويد" },
-        { id: "Ghamadi_40kbps", name: "سعد الغامدي" },
         { id: "Abdul_Basit_Murattal_192kbps", name: "عبدالباسط عبدالصمد مرتل" },
-        { id: "Abdul_Basit_Mujawwad_128kbps", name: "عبدالباسط عبدالصمد مجود" },
-        { id: "Abdurrahmaan_As-Sudais_192kbps", name: "عبدالرحمن السديس" },
-        { id: "Abdullah_Basfar_192kbps", name: "عبدالله بصفر" },
-        { id: "Abdullaah_3awwaad_Al-Juhaynee_128kbps", name: "عبد الله عواد الجهني" },
-        { id: "Ali_Jaber_64kbps", name: "علي جابر" },
-        { id: "Hudhaify_128kbps", name: "علي الحذيفي" },
-        { id: "Fares_Abbad_64kbps", name: "فارس عباد" },
-        { id: "khalefa_al_tunaiji_64kbps", name: "خليفة الطنيجي" },
-        { id: "Husary_128kbps_Mujawwad", name: "محمود خليل الحصري مجود" },
-        { id: "Husary_128kbps", name: "محمود خليل الحصري مرتل" },
-        { id: "Minshawy_Mujawwad_192kbps", name: "محمد صديق المنشاوي مجود" },
-        { id: "Minshawy_Murattal_128kbps", name: "محمد صديق المنشاوي مرتل" },
-        { id: "Mohammad_al_Tablaway_128kbps", name: "محمد الطبلاوي" },
-        { id: "Muhammad_Ayyoub_128kbps", name: "محمد أيوب" },
-        { id: "Muhammad_Jibreel_128kbps", name: "محمد جبريل" },
         { id: "Alafasy_128kbps", name: "مشاري العفاسي" },
-        { id: "Nasser_Alqatami_128kbps", name: "ناصر القطامي" },
-        { id: "Hani_Rifai_192kbps", name: "هاني الرفاعي" }
+        { id: "Hani_Rifai_192kbps", name: "هاني الرفاعي" },
+        { id: "Minshawy_Murattal_128kbps", name: "محمد صديق المنشاوي مرتل" }
     ];
     
     // --- العناصر ---
@@ -314,7 +307,7 @@
         }
     }
     
-    populateFontSizeSelect(arabicFontSize, 40); // الخط الافتراضي 40
+    populateFontSizeSelect(arabicFontSize, 40);
     populateFontSizeSelect(transFontSize, 45);
     
     // --- المتغيرات العامة ---
@@ -323,17 +316,17 @@
     let currentReciter = reciters[0].name;
     let overlayOpacity = 0.6;
     let currentRatio = "9/16";
-    let isGenerating = false;
+    let isPreparing = false;
     let isRecording = false;
-    let preparedData = null; // لتخزين البيانات المجهزة
+    let preparedData = null;
     
     // متغيرات التسجيل
     let mediaRecorder = null;
     let recordedChunks = [];
     let activeAudioContext = null;
-    let currentBackgroundStream = null;
-    let backgroundVideoElement = null;
+    let currentBackgroundVideo = null;
     let animationFrameId = null;
+    let syncIntervalId = null;
     
     // تأثير الانتقال بين الآيات
     let textTransition = { active: false, oldText: "", oldTrans: "", oldNum: 1, progress: 0 };
@@ -342,9 +335,12 @@
         if (currentRatio === "16/9") { canvas.width = 1920; canvas.height = 1080; }
         else if (currentRatio === "9/16") { canvas.width = 1080; canvas.height = 1920; }
         else { canvas.width = 1080; canvas.height = 1080; }
+        // إعادة رسم خلفية سوداء فوراً
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
-    ratioSelect.onchange = () => { if (!isGenerating && !isRecording) { currentRatio = ratioSelect.value; setCanvasSize(); } };
+    ratioSelect.onchange = () => { if (!isPreparing && !isRecording) { currentRatio = ratioSelect.value; setCanvasSize(); } };
     
     // --- تحميل البيانات ---
     function loadReciters() {
@@ -356,6 +352,7 @@
             select.appendChild(option);
         });
         select.onchange = () => currentReciter = select.selectedOptions[0].textContent;
+        currentReciter = reciters[0].name;
     }
     
     async function loadSurahs() {
@@ -541,211 +538,13 @@
         ctx.restore();
     }
     
-    // --- إنشاء دفق فيديو عشوائي للمدة المطلوبة ---
-    async function createVideoStreamForDuration(targetDuration, targetWidth, targetHeight, onProgress) {
-        let videoSegments = [];
-        let totalDuration = 0;
-        
-        const getRandomVideoUrl = () => {
-            const randomName = availableVideos[Math.floor(Math.random() * availableVideos.length)];
-            return VIDEO_BASE_URL + randomName;
-        };
-        
-        while (totalDuration < targetDuration) {
-            const url = getRandomVideoUrl();
-            const video = document.createElement('video');
-            video.src = url;
-            video.crossOrigin = "Anonymous";
-            video.muted = true;
-            
-            await new Promise((resolve) => {
-                video.onloadedmetadata = () => {
-                    let duration = video.duration;
-                    if (totalDuration + duration > targetDuration + CROSSFADE_DURATION) {
-                        duration = targetDuration - totalDuration + 0.1;
-                    }
-                    videoSegments.push({ video, duration, url });
-                    totalDuration += duration;
-                    resolve();
-                };
-                video.onerror = () => { console.warn(`فشل تحميل ${url}`); resolve(); };
-                video.load();
-            });
-            if (onProgress) onProgress(Math.min(100, (totalDuration / targetDuration) * 100));
-        }
-        
-        const mergeCanvas = document.createElement('canvas');
-        mergeCanvas.width = targetWidth;
-        mergeCanvas.height = targetHeight;
-        const mergeCtx = mergeCanvas.getContext('2d');
-        
-        for (const seg of videoSegments) {
-            seg.video.currentTime = 0;
-            await seg.video.play().catch(e => console.warn);
-        }
-        
-        let startTime = null;
-        let animationId = null;
-        
-        const stream = mergeCanvas.captureStream(30);
-        
-        const processFrame = (timestamp) => {
-            if (!startTime) startTime = timestamp;
-            const elapsed = (timestamp - startTime) / 1000;
-            
-            if (elapsed >= totalDuration) {
-                cancelAnimationFrame(animationId);
-                for (const seg of videoSegments) {
-                    seg.video.pause();
-                }
-                return;
-            }
-            
-            let currentSegment = null;
-            let nextSegment = null;
-            let timeInCurrent = 0;
-            let accumulatedTime = 0;
-            
-            for (let i = 0; i < videoSegments.length; i++) {
-                const seg = videoSegments[i];
-                const segDuration = seg.duration;
-                if (elapsed >= accumulatedTime && elapsed < accumulatedTime + segDuration) {
-                    currentSegment = seg;
-                    timeInCurrent = elapsed - accumulatedTime;
-                    if (i + 1 < videoSegments.length && (accumulatedTime + segDuration) - elapsed < CROSSFADE_DURATION) {
-                        nextSegment = videoSegments[i + 1];
-                    }
-                    break;
-                }
-                accumulatedTime += segDuration;
-            }
-            
-            if (currentSegment) {
-                let fadeFactor = 1;
-                let nextFadeFactor = 0;
-                if (nextSegment) {
-                    const fadeStart = currentSegment.duration - CROSSFADE_DURATION;
-                    if (timeInCurrent > fadeStart) {
-                        const fadeProgress = (timeInCurrent - fadeStart) / CROSSFADE_DURATION;
-                        fadeFactor = 1 - fadeProgress;
-                        nextFadeFactor = fadeProgress;
-                    }
-                }
-                
-                mergeCtx.globalAlpha = fadeFactor;
-                mergeCtx.drawImage(currentSegment.video, 0, 0, targetWidth, targetHeight);
-                
-                if (nextSegment && nextFadeFactor > 0) {
-                    mergeCtx.globalAlpha = nextFadeFactor;
-                    mergeCtx.drawImage(nextSegment.video, 0, 0, targetWidth, targetHeight);
-                }
-                mergeCtx.globalAlpha = 1;
-            }
-            
-            animationId = requestAnimationFrame(processFrame);
-        };
-        
-        animationId = requestAnimationFrame(processFrame);
-        
-        return { stream, totalDuration, stop: () => {
-            if (animationId) cancelAnimationFrame(animationId);
-            for (const seg of videoSegments) {
-                seg.video.pause();
-                seg.video.src = "";
-            }
-            stream.getTracks().forEach(t => t.stop());
-        }};
-    }
-    
-    // --- رندر الإطار النهائي ---
-    function startFinalRendering(backgroundStreamObj, audioElement, audioBuffers, startAyah) {
-        if (currentBackgroundStream) {
-            currentBackgroundStream.stop();
-        }
-        currentBackgroundStream = backgroundStreamObj;
-        
-        const video = document.createElement('video');
-        video.srcObject = backgroundStreamObj.stream;
-        video.muted = true;
-        video.loop = false;
-        video.play();
-        backgroundVideoElement = video;
-        
-        function renderFrame() {
-            if (!video.readyState || video.readyState < 2) {
-                animationFrameId = requestAnimationFrame(renderFrame);
-                return;
-            }
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = `rgba(0, 0, 0, ${overlayOpacity})`;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            if (textTransition.active) {
-                drawText(textTransition.oldText, textTransition.oldTrans, textTransition.oldNum, 1 - textTransition.progress);
-                drawText(currentAyah.text, currentAyah.translation, currentAyah.number, textTransition.progress);
-                textTransition.progress += 0.03;
-                if (textTransition.progress >= 1) {
-                    textTransition.active = false;
-                }
-            } else {
-                drawText(currentAyah.text, currentAyah.translation, currentAyah.number, 1);
-            }
-            
-            drawFooter();
-            animationFrameId = requestAnimationFrame(renderFrame);
-        }
-        
-        renderFrame();
-        
-        // مزامنة الآيات مع الصوت
-        let lastAyah = startAyah - 1;
-        const useFade = document.getElementById('transitionEffect').value === 'fade';
-        
-        const syncInterval = setInterval(async () => {
-            if (audioElement.ended) {
-                clearInterval(syncInterval);
-                return;
-            }
-            
-            const currentTime = audioElement.currentTime;
-            let accumulatedTime = 0;
-            
-            for (let i = 0; i < audioBuffers.length; i++) {
-                const duration = audioBuffers[i].duration;
-                const adjustedDuration = i < audioBuffers.length - 1 ? duration - 0.15 : duration;
-                
-                if (currentTime >= accumulatedTime && currentTime < accumulatedTime + adjustedDuration) {
-                    const newAyahNum = startAyah + i;
-                    if (currentAyah.number !== newAyahNum) {
-                        if (useFade && !textTransition.active) {
-                            textTransition.oldText = currentAyah.text;
-                            textTransition.oldTrans = currentAyah.translation;
-                            textTransition.oldNum = currentAyah.number;
-                            textTransition.active = true;
-                            textTransition.progress = 0;
-                        }
-                        await loadAyah(newAyahNum);
-                    }
-                    break;
-                }
-                accumulatedTime += adjustedDuration;
-            }
-        }, 50);
-        
-        return syncInterval;
-    }
-    
     // --- دوال الصوت ---
     async function loadAudio(reciter, surah, ayah) {
         const s = surah.toString().padStart(3, '0');
         const a = ayah.toString().padStart(3, '0');
         const urls = [
             `https://www.everyayah.com/data/${reciter}/${s}${a}.mp3`,
-            `https://www.everyayah.com/data/${reciter.split('_')[0]}_128kbps/${s}${a}.mp3`,
-            `https://www.everyayah.com/data/${reciter.split('_')[0]}_64kbps/${s}${a}.mp3`
+            `https://www.everyayah.com/data/${reciter.split('_')[0]}_128kbps/${s}${a}.mp3`
         ];
         for (let url of urls) {
             try {
@@ -761,7 +560,7 @@
         let totalDuration = 0;
         for (let i = 0; i < audioBuffers.length; i++) {
             totalDuration += audioBuffers[i].duration;
-            if (i < audioBuffers.length - 1) totalDuration -= 0.15;
+            if (i < audioBuffers.length - 1) totalDuration -= 0.1;
         }
         
         const mergedBuffer = audioContext.createBuffer(2, sampleRate * totalDuration, sampleRate);
@@ -771,19 +570,12 @@
             for (let ch = 0; ch < 2; ch++) {
                 const sourceData = buffer.getChannelData(ch);
                 const targetData = mergedBuffer.getChannelData(ch);
-                const overlap = (i < audioBuffers.length - 1) ? Math.floor(audioContext.sampleRate * 0.15) : 0;
                 for (let j = 0; j < sourceData.length; j++) {
-                    if (i > 0 && j < overlap) {
-                        const fadeIn = j / overlap;
-                        const fadeOut = 1 - (j / overlap);
-                        targetData[offset - overlap + j] = (targetData[offset - overlap + j] * fadeOut) + (sourceData[j] * fadeIn);
-                    } else {
-                        targetData[offset + j] = sourceData[j];
-                    }
+                    targetData[offset + j] = sourceData[j];
                 }
             }
             offset += buffer.length;
-            if (i < audioBuffers.length - 1) offset -= Math.floor(audioContext.sampleRate * 0.15);
+            if (i < audioBuffers.length - 1) offset -= Math.floor(audioContext.sampleRate * 0.1);
         }
         return mergedBuffer;
     }
@@ -829,24 +621,32 @@
         return new Blob([view], { type: 'audio/wav' });
     }
     
+    // --- اختيار فيديو عشوائي واحد بدلاً من مقاطع متعددة (أبسط وأسرع) ---
+    async function getRandomVideoUrl() {
+        const randomName = availableVideos[Math.floor(Math.random() * availableVideos.length)];
+        return VIDEO_BASE_URL + randomName;
+    }
+    
     // --- تجهيز كل شيء قبل التسجيل ---
     async function prepareAll() {
-        if (isGenerating) return;
-        isGenerating = true;
+        if (isPreparing) return;
+        isPreparing = true;
         generateBtn.disabled = true;
         startRecordBtn.disabled = true;
         statusDiv.classList.remove('hidden');
+        statusDiv.innerHTML = '<span class="loading-spinner"></span> جاري تحميل التلاوة...';
         
         const start = parseInt(document.getElementById('startAyah').value);
         const end = parseInt(document.getElementById('endAyah').value);
         const reciter = document.getElementById('reciterSelect').value;
         
         try {
-            statusDiv.innerText = "جاري تحميل التلاوة...";
+            // 1. تحميل الصوت
             const audioContext = new AudioContext();
             const audioBuffers = [];
             
             for (let i = start; i <= end; i++) {
+                statusDiv.innerHTML = `<span class="loading-spinner"></span> جاري تحميل الآية ${i}...`;
                 const audioData = await loadAudio(reciter, currentSurah.number, i);
                 const buffer = await audioContext.decodeAudioData(audioData);
                 audioBuffers.push(buffer);
@@ -854,11 +654,23 @@
             
             const totalAudioDuration = audioBuffers.reduce((sum, buf) => sum + buf.duration, 0);
             
-            statusDiv.innerText = "جاري تحضير فيديوهات الخلفية العشوائية...";
-            const videoStreamObj = await createVideoStreamForDuration(totalAudioDuration, canvas.width, canvas.height, (p) => {
-                statusDiv.innerText = `تجهيز الفيديو: ${Math.floor(p)}%`;
+            // 2. اختيار فيديو عشوائي واحد
+            statusDiv.innerHTML = `<span class="loading-spinner"></span> جاري اختيار فيديو عشوائي...`;
+            const videoUrl = await getRandomVideoUrl();
+            const backgroundVideo = document.createElement('video');
+            backgroundVideo.src = videoUrl;
+            backgroundVideo.crossOrigin = "Anonymous";
+            backgroundVideo.loop = true;
+            backgroundVideo.muted = true;
+            
+            await new Promise((resolve, reject) => {
+                backgroundVideo.onloadedmetadata = () => resolve();
+                backgroundVideo.onerror = () => reject(new Error("فشل تحميل الفيديو"));
+                backgroundVideo.load();
             });
             
+            // 3. دمج الصوت
+            statusDiv.innerHTML = `<span class="loading-spinner"></span> جاري دمج الصوت...`;
             const mergedBuffer = await mergeAudios(audioBuffers, audioContext);
             const wavBlob = audioBufferToWav(mergedBuffer);
             const audioUrl = URL.createObjectURL(wavBlob);
@@ -870,20 +682,21 @@
                 audioBuffers,
                 audio,
                 audioUrl,
-                videoStreamObj,
+                backgroundVideo,
+                totalAudioDuration,
                 startAyah: start
             };
             
-            statusDiv.innerText = "تم التجهيز بنجاح! اضغط بدء التسجيل";
+            statusDiv.innerHTML = "✓ تم التجهيز بنجاح! اضغط بدء التسجيل";
             startRecordBtn.disabled = false;
             
         } catch (error) {
             console.error('خطأ:', error);
-            alert('حدث خطأ أثناء التجهيز: ' + error.message);
+            statusDiv.innerHTML = "✗ خطأ: " + error.message;
+            setTimeout(() => { statusDiv.classList.add('hidden'); }, 3000);
             generateBtn.disabled = false;
-            statusDiv.classList.add('hidden');
         } finally {
-            isGenerating = false;
+            isPreparing = false;
         }
     }
     
@@ -893,14 +706,90 @@
         isRecording = true;
         startRecordBtn.disabled = true;
         generateBtn.disabled = true;
-        statusDiv.innerText = "جاري التسجيل والعرض...";
+        statusDiv.innerHTML = '<span class="loading-spinner"></span> جاري التشغيل والتسجيل...';
         
-        const { audioContext, audioBuffers, audio, audioUrl, videoStreamObj, startAyah } = preparedData;
+        const { audioContext, audioBuffers, audio, audioUrl, backgroundVideo, totalAudioDuration, startAyah } = preparedData;
         
         activeAudioContext = audioContext;
         
-        // بدء العرض
-        const syncInterval = startFinalRendering(videoStreamObj, audio, audioBuffers, startAyah);
+        // بدء تشغيل فيديو الخلفية
+        backgroundVideo.currentTime = 0;
+        await backgroundVideo.play();
+        currentBackgroundVideo = backgroundVideo;
+        
+        // وظيفة الرندر
+        function renderFrame() {
+            if (!backgroundVideo || backgroundVideo.paused || backgroundVideo.ended) {
+                if (backgroundVideo && backgroundVideo.loop && !backgroundVideo.ended) {
+                    // فيديو الخلفية لا يزال يعمل
+                }
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // رسم فيديو الخلفية
+            if (backgroundVideo && backgroundVideo.readyState >= 2) {
+                ctx.drawImage(backgroundVideo, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // تعتيم الخلفية
+            ctx.fillStyle = `rgba(0, 0, 0, ${overlayOpacity})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // رسم النص مع تأثير الانتقال
+            if (textTransition.active) {
+                drawText(textTransition.oldText, textTransition.oldTrans, textTransition.oldNum, 1 - textTransition.progress);
+                drawText(currentAyah.text, currentAyah.translation, currentAyah.number, textTransition.progress);
+                textTransition.progress += 0.04;
+                if (textTransition.progress >= 1) {
+                    textTransition.active = false;
+                }
+            } else {
+                drawText(currentAyah.text, currentAyah.translation, currentAyah.number, 1);
+            }
+            
+            drawFooter();
+            animationFrameId = requestAnimationFrame(renderFrame);
+        }
+        
+        renderFrame();
+        
+        // مزامنة الآيات مع الصوت
+        const useFade = document.getElementById('transitionEffect').value === 'fade';
+        
+        syncIntervalId = setInterval(async () => {
+            if (audio.ended) {
+                clearInterval(syncIntervalId);
+                return;
+            }
+            
+            const currentTime = audio.currentTime;
+            let accumulatedTime = 0;
+            
+            for (let i = 0; i < audioBuffers.length; i++) {
+                const duration = audioBuffers[i].duration;
+                const adjustedDuration = i < audioBuffers.length - 1 ? duration - 0.1 : duration;
+                
+                if (currentTime >= accumulatedTime && currentTime < accumulatedTime + adjustedDuration) {
+                    const newAyahNum = startAyah + i;
+                    if (currentAyah.number !== newAyahNum) {
+                        if (useFade && !textTransition.active) {
+                            textTransition.oldText = currentAyah.text;
+                            textTransition.oldTrans = currentAyah.translation;
+                            textTransition.oldNum = currentAyah.number;
+                            textTransition.active = true;
+                            textTransition.progress = 0;
+                        }
+                        await loadAyah(newAyahNum);
+                    }
+                    break;
+                }
+                accumulatedTime += adjustedDuration;
+            }
+        }, 50);
         
         // بدء التسجيل
         const stream = canvas.captureStream(30);
@@ -924,25 +813,28 @@
             URL.revokeObjectURL(url);
             
             // تنظيف
-            if (activeAudioContext) activeAudioContext.close();
-            if (currentBackgroundStream) {
-                currentBackgroundStream.stop();
-                currentBackgroundStream = null;
-            }
+            if (syncIntervalId) clearInterval(syncIntervalId);
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (activeAudioContext) activeAudioContext.close();
+            if (currentBackgroundVideo) currentBackgroundVideo.pause();
             URL.revokeObjectURL(audioUrl);
             
-            statusDiv.innerText = "تم الانتهاء! يمكنك تجهيز فيديو جديد";
+            statusDiv.innerHTML = "✓ تم الانتهاء! يمكنك تجهيز فيديو جديد";
             generateBtn.disabled = false;
             startRecordBtn.disabled = true;
             isRecording = false;
             preparedData = null;
+            
+            setTimeout(() => { 
+                if (statusDiv.innerHTML.includes("تم الانتهاء")) 
+                    statusDiv.classList.add('hidden'); 
+            }, 3000);
         };
         
         mediaRecorder.start();
         audio.play();
         
-        // مراقبة نهاية الصوت
+        // عند انتهاء الصوت
         audio.onended = () => {
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
@@ -958,7 +850,7 @@
     
     translationLang.onchange = () => {
         transFontSize.disabled = (translationLang.value === "");
-        loadAyah(currentAyah.number);
+        if (currentAyah.number) loadAyah(currentAyah.number);
     };
     
     generateBtn.onclick = prepareAll;
@@ -969,6 +861,10 @@
     loadReciters();
     loadSurahs();
     transFontSize.disabled = true;
+    
+    // رسم خلفية سوداء في البداية
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 </script>
 </body>
 </html>
