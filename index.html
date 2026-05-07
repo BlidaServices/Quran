@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>صانع الكرومات - الآيات القرآنية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Amiri:wght@400;700&family=Roboto:wght@300;400&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Amiri', serif;
+            background: linear-gradient(135deg, #022c22 0%, #064e3b 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 30px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .canvas-area {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #c5a059, #e2c28a);
+            color: #022c22;
+            font-weight: bold;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-icon {
+            background: rgba(0, 0, 0, 0.7);
+            color: #c5a059;
+            border: 1px solid #c5a059;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            position: absolute;
+            top: 30px;
+        }
+        
+        .btn-icon.right { right: 30px; }
+        .btn-icon.left { left: 30px; }
+        
+        select, input[type="range"] {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        
+        select:disabled, input:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        select option {
+            background: #022c22;
+            color: white;
+        }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            color: #c5a059;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .toggle-switch {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #c5a059;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .divider {
+            margin: 20px 0;
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(197, 160, 89, 0.5), transparent);
+        }
+        
+        .hidden { display: none; }
+        
+        /* تخصيص حجم القوائم المنسدلة */
+        select[size] {
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- لوحة التحكم -->
+    <div class="card">
+        <!-- الصف الأول: القارئ والسورة -->
+        <div class="row">
+            <div><label>القارئ</label><select id="reciterSelect"></select></div>
+            <div><label>السورة</label><select id="surahSelect"></select></div>
+        </div>
+        
+        <!-- الصف الثاني: من الآية وإلى الآية -->
+        <div class="row">
+            <div><label>من الآية</label><select id="startAyah"></select></div>
+            <div><label>إلى الآية</label><select id="endAyah"></select></div>
+        </div>
+        
+        <!-- خط فاصل -->
+        <hr class="divider">
+        
+        <!-- الصف الثالث: المقاسات (يمين) وحجم النص العربي (يسار) -->
+        <div class="row">
+            <div>
+                <label>المقاسات</label>
+                <select id="ratioSelect">
+                    <option value="9/16" selected>تيك توك (9:16)</option>
+                    <option value="16/9">يوتيوب (16:9)</option>
+                    <option value="1/1">مربع (1:1)</option>
+                </select>
+            </div>
+            <div>
+                <label>حجم النص العربي</label>
+                <select id="arabicFontSize"></select>
+            </div>
+        </div>
+        
+        <!-- الصف الرابع: تأثير الانتقال (يمين) وإظهار اسم السورة والقارئ (يسار) -->
+        <div class="row">
+            <div>
+                <label>تأثير الانتقال</label>
+                <select id="transitionEffect">
+                    <option value="none" selected>بدون تأثير</option>
+                    <option value="fade">تأثير تلاشي (Fade)</option>
+                </select>
+            </div>
+            <div>
+                <label>إظهار اسم السورة والقارئ</label>
+                <select id="showSurahNameSelect">
+                    <option value="yes" selected>نعم</option>
+                    <option value="no">لا</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- خط فاصل -->
+        <hr class="divider">
+        
+        <!-- الصف الخامس: الترجمة -->
+        <div class="row">
+            <div>
+                <label>لغة الترجمة</label>
+                <select id="translationLang">
+                    <option value="">بدون ترجمة</option>
+                    <option value="en.sahih">الإنجليزية - Sahih International</option>
+                    <option value="fr.hamidullah">الفرنسية - Hamidullah</option>
+                    <option value="es.cortes">الإسبانية - Cortes</option>
+                    <option value="pt.elhayek">البرتغالية - Elhayek</option>
+                    <option value="de.aburida">الألمانية - Abu Rida</option>
+                    <option value="tr.diyanet">التركية - Diyanet</option>
+                    <option value="ru.kuliev">الروسية - Kuliev</option>
+                    <option value="it.piccardo">الإيطالية - Piccardo</option>
+                    <option value="nl.keyzer">الهولندية - Keyzer</option>
+                    <option value="ur.jalandhry">الأردية - Jalandhry</option>
+                    <option value="id.bahasa">الإندونيسية - Bahasa</option>
+                    <option value="bn.hoque">البنغالية - Hoque</option>
+                    <option value="zh.jian">الصينية - Jian</option>
+                    <option value="fa.makarem">الفارسية - Makarem</option>
+                    <option value="so.abduh">الصومالية - Abduh</option>
+                </select>
+            </div>
+            <div>
+                <label>حجم الترجمة</label>
+                <select id="transFontSize" disabled></select>
+            </div>
+        </div>
+        
+        <!-- خط فاصل -->
+        <hr class="divider">
+        
+        <!-- الخلفية -->
+        <div>
+            <label>تعتيم الخلفية <span id="opacityValue">80</span>%</label>
+            <input type="range" id="opacitySlider" min="0" max="100" value="80">
+        </div>
+        
+        <button id="generateBtn" class="btn-primary">
+            <i class="fas fa-magic"></i> توليد الكروما
+        </button>
+    </div>
+    
+    <!-- منطقة العرض -->
+    <div class="canvas-area">
+        <button id="changeBgBtn" class="btn-icon right"><i class="fas fa-image"></i> تغيير الخلفية</button>
+        <button id="downloadBtn" class="btn-icon left hidden"><i class="fas fa-download"></i> تحميل المقطع</button>
+        <canvas id="canvas"></canvas>
+    </div>
+</div>
+
+<script>
+    // جميع القراء (كامل القائمة الأصلية)
+    const reciters = [
+        { id: "Yasser_Ad-Dussary_128kbps", name: "ياسر الدوسري" },
+        { id: "MaherAlMuaiqly128kbps", name: "ماهر المعيقلي" },
+        { id: "Abu_Bakr_Ash-Shaatree_128kbps", name: "أبوبكر الشاطري" },
+        { id: "Ibrahim_Akhdar_32kbps", name: "ابراهيم الاخضر" },
+        { id: "Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net", name: "أحمد العجمي" },
+        { id: "Ayman_Sowaid_64kbps", name: "أيمن رشدي سويد" },
+        { id: "Ghamadi_40kbps", name: "سعد الغامدي" },
+        { id: "Abdul_Basit_Murattal_192kbps", name: "عبدالباسط عبدالصمد مرتل" },
+        { id: "Abdul_Basit_Mujawwad_128kbps", name: "عبدالباسط عبدالصمد مجود" },
+        { id: "Abdurrahmaan_As-Sudais_192kbps", name: "عبدالرحمن السديس" },
+        { id: "Abdullah_Basfar_192kbps", name: "عبدالله بصفر" },
+        { id: "Abdullaah_3awwaad_Al-Juhaynee_128kbps", name: "عبد الله عواد الجهني" },
+        { id: "Ali_Jaber_64kbps", name: "علي جابر" },
+        { id: "Hudhaify_128kbps", name: "علي الحذيفي" },
+        { id: "Fares_Abbad_64kbps", name: "فارس عباد" },
+        { id: "khalefa_al_tunaiji_64kbps", name: "خليفة الطنيجي" },
+        { id: "Husary_128kbps_Mujawwad", name: "محمود خليل الحصري مجود" },
+        { id: "Husary_128kbps", name: "محمود خليل الحصري مرتل" },
+        { id: "Minshawy_Mujawwad_192kbps", name: "محمد صديق المنشاوي مجود" },
+        { id: "Minshawy_Murattal_128kbps", name: "محمد صديق المنشاوي مرتل" },
+        { id: "Mohammad_al_Tablaway_128kbps", name: "محمد الطبلاوي" },
+        { id: "Muhammad_Ayyoub_128kbps", name: "محمد أيوب" },
+        { id: "Muhammad_Jibreel_128kbps", name: "محمد جبريل" },
+        { id: "Alafasy_128kbps", name: "مشاري العفاسي" },
+        { id: "Nasser_Alqatami_128kbps", name: "ناصر القطامي" },
+        { id: "Hani_Rifai_192kbps", name: "هاني الرفاعي" }
+    ];
+    
+    // العناصر
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const generateBtn = document.getElementById('generateBtn');
+    const changeBgBtn = document.getElementById('changeBgBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const ratioSelect = document.getElementById('ratioSelect');
+    const showSurahNameSelect = document.getElementById('showSurahNameSelect');
+    const translationLang = document.getElementById('translationLang');
+    const transFontSize = document.getElementById('transFontSize');
+    const arabicFontSize = document.getElementById('arabicFontSize');
+    
+    // دالة لملء قائمة الأحجام من 20 إلى 100
+    function populateFontSizeSelect(selectElement, defaultValue = 70) {
+        selectElement.innerHTML = '';
+        for (let i = 20; i <= 100; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            if (i === defaultValue) {
+                option.selected = true;
+            }
+            selectElement.appendChild(option);
+        }
+    }
+    
+    // ملء قوائم الأحجام
+    populateFontSizeSelect(arabicFontSize, 70);
+    populateFontSizeSelect(transFontSize, 45);
+    
+    // المتغيرات
+    let currentAyah = { text: "", translation: "", number: 1 };
+    let currentSurah = { name: "الفاتحة", number: 1, ayahs: 7 };
+    let currentReciter = reciters[0].name;
+    let bgImage = null;
+    let overlayOpacity = 0.8;
+    let currentRatio = "9/16";
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let finalBlob = null;
+    let isGenerating = false;
+    let fadeState = { isActive: false, oldText: "", oldTrans: "", oldNum: 1, opacity: 1 };
+    
+    // التحكم في تفعيل/تعطيل حجم الترجمة بناءً على لغة الترجمة المختارة
+    function toggleTransFontSize() {
+        const lang = translationLang.value;
+        if (lang === "") {
+            transFontSize.disabled = true;
+        } else {
+            transFontSize.disabled = false;
+        }
+    }
+    
+    // إعداد الكانفاس بناءً على النسبة المختارة
+    function setCanvasSize() {
+        if (currentRatio === "16/9") { canvas.width = 1920; canvas.height = 1080; }
+        else if (currentRatio === "9/16") { canvas.width = 1080; canvas.height = 1920; }
+        else { canvas.width = 1080; canvas.height = 1080; }
+    }
+    
+    // تغيير النسبة من القائمة المنسدلة
+    ratioSelect.onchange = () => {
+        if (!isGenerating) {
+            currentRatio = ratioSelect.value;
+            setCanvasSize();
+        }
+    };
+    
+    // تحميل القراء
+    function loadReciters() {
+        const select = document.getElementById('reciterSelect');
+        reciters.forEach(r => {
+            const option = document.createElement('option');
+            option.value = r.id;
+            option.textContent = r.name;
+            select.appendChild(option);
+        });
+        select.onchange = () => currentReciter = select.selectedOptions[0].textContent;
+    }
+    
+    // تحميل السور
+    async function loadSurahs() {
+        const res = await fetch('https://api.alquran.cloud/v1/surah');
+        const data = await res.json();
+        const select = document.getElementById('surahSelect');
+        
+        data.data.forEach(surah => {
+            const option = document.createElement('option');
+            option.value = surah.number;
+            option.textContent = `${surah.number}. ${surah.name}`;
+            option.dataset.ayahs = surah.numberOfAyahs;
+            option.dataset.name = surah.name;
+            select.appendChild(option);
+        });
+        
+        select.onchange = () => {
+            const selected = select.selectedOptions[0];
+            currentSurah.name = selected.dataset.name;
+            currentSurah.number = parseInt(selected.value);
+            currentSurah.ayahs = parseInt(selected.dataset.ayahs);
+            updateAyahSelects();
+            loadAyah(1);
+        };
+        
+        updateAyahSelects();
+        loadAyah(1);
+    }
+    
+    // تحديث قوائم الآيات
+    function updateAyahSelects() {
+        const startSelect = document.getElementById('startAyah');
+        const endSelect = document.getElementById('endAyah');
+        
+        startSelect.innerHTML = '';
+        for (let i = 1; i <= currentSurah.ayahs; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            startSelect.appendChild(option);
+        }
+        
+        startSelect.onchange = () => {
+            const start = parseInt(startSelect.value);
+            endSelect.innerHTML = '';
+            for (let i = start; i <= currentSurah.ayahs; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                endSelect.appendChild(option);
+            }
+            loadAyah(start);
+        };
+        
+        startSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // تحميل آية معينة
+    async function loadAyah(ayahNum) {
+        try {
+            const lang = translationLang.value;
+            
+            const [arabicRes, transRes] = await Promise.all([
+                fetch(`https://api.alquran.cloud/v1/ayah/${currentSurah.number}:${ayahNum}`),
+                lang ? fetch(`https://api.alquran.cloud/v1/ayah/${currentSurah.number}:${ayahNum}/${lang}`) : Promise.resolve(null)
+            ]);
+            
+            const arabicData = await arabicRes.json();
+            
+            let text = arabicData.data.text;
+            if (ayahNum === 1 && currentSurah.number !== 1 && currentSurah.number !== 9) {
+                const words = text.split(' ');
+                if (words.length > 4) text = words.slice(4).join(' ');
+            }
+            
+            let translation = "";
+            if (lang && transRes) {
+                const transData = await transRes.json();
+                translation = transData.data.text;
+            }
+            
+            currentAyah = {
+                text: text,
+                translation: translation,
+                number: ayahNum
+            };
+        } catch (error) {
+            console.error('خطأ في تحميل الآية:', error);
+        }
+    }
+    
+    // تحويل الأرقام إلى عربية
+    function toArabicDigits(num) {
+        return num.toString().replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
+    }
+    
+    // تقسيم النص لأسطر
+    function wrapText(text, maxWidth, context, fontSize) {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+        
+        for (let word of words) {
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            const metrics = context.measureText(testLine);
+            
+            if (metrics.width > maxWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        lines.push(currentLine);
+        return lines;
+    }
+    
+    // رسم النص على الكانفاس
+    function drawText(text, translation, number, opacity = 1) {
+        if (!text) return;
+        
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.textAlign = "center";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+        ctx.shadowBlur = 10;
+        
+        const arabicSize = parseInt(arabicFontSize.value);
+        const transSize = transFontSize.disabled ? 45 : parseInt(transFontSize.value);
+        const maxWidth = canvas.width * 0.85;
+        const lang = translationLang.value;
+        const showTranslation = lang && translation && translation.trim() !== "";
+        
+        // إضافة رقم الآية
+        const fullText = text + " ۝" + toArabicDigits(number);
+        
+        // النص العربي
+        ctx.font = `bold ${arabicSize}px 'Amiri'`;
+        ctx.fillStyle = "white";
+        const arabicLines = wrapText(fullText, maxWidth, ctx, arabicSize);
+        
+        let totalHeight = arabicLines.length * arabicSize * 1.3;
+        
+        if (showTranslation) {
+            totalHeight += transSize * 1.2 * wrapText(translation, maxWidth, ctx, transSize).length + 30;
+        }
+        
+        let y = canvas.height / 2 - totalHeight / 2;
+        
+        // رسم النص العربي
+        arabicLines.forEach(line => {
+            ctx.fillText(line, canvas.width / 2, y);
+            y += arabicSize * 1.3;
+        });
+        
+        // رسم الترجمة
+        if (showTranslation) {
+            y += 30;
+            ctx.font = `400 ${transSize}px 'Roboto'`;
+            ctx.fillStyle = "#e0e0e0";
+            const transLines = wrapText(translation, maxWidth, ctx, transSize);
+            transLines.forEach(line => {
+                ctx.fillText(line, canvas.width / 2, y);
+                y += transSize * 1.2;
+            });
+        }
+        
+        ctx.restore();
+    }
+    
+    // رسم اسم السورة والقارئ
+    function drawFooter() {
+        const showSurahName = showSurahNameSelect.value === 'yes';
+        if (!showSurahName) return;
+        
+        ctx.save();
+        const fontSize = canvas.width < 1100 ? 40 : 50;
+        const padding = 50;
+        
+        // اسم السورة
+        ctx.font = `400 ${fontSize}px 'Amiri Quran'`;
+        ctx.fillStyle = "#c5a059";
+        ctx.textAlign = "right";
+        const surahName = `سُورَةُ ${currentSurah.name}`;
+        ctx.fillText(surahName, canvas.width - padding, canvas.height - 60);
+        
+        // اسم القارئ
+        ctx.font = `400 ${fontSize * 0.7}px 'Tajawal'`;
+        ctx.fillStyle = "rgba(253, 250, 243, 0.7)";
+        ctx.textAlign = "left";
+        ctx.fillText(`بصوت: ${currentReciter}`, padding, canvas.height - 60);
+        
+        // خط فاصل
+        ctx.strokeStyle = "rgba(197, 160, 89, 0.3)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding, canvas.height - 45);
+        ctx.lineTo(canvas.width - padding, canvas.height - 45);
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+    
+    // رسم الإطار بالكامل
+    function drawFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // رسم الخلفية
+        if (bgImage) {
+            const scale = Math.max(canvas.width / bgImage.width, canvas.height / bgImage.height);
+            const x = (canvas.width - bgImage.width * scale) / 2;
+            const y = (canvas.height - bgImage.height * scale) / 2;
+            ctx.drawImage(bgImage, x, y, bgImage.width * scale, bgImage.height * scale);
+            ctx.fillStyle = `rgba(0, 0, 0, ${overlayOpacity})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // رسم النص مع تأثير الانتقال
+        if (fadeState.isActive) {
+            drawText(fadeState.oldText, fadeState.oldTrans, fadeState.oldNum, 1 - fadeState.opacity);
+            drawText(currentAyah.text, currentAyah.translation, currentAyah.number, fadeState.opacity);
+            fadeState.opacity -= 0.025;
+            if (fadeState.opacity <= 0) {
+                fadeState.isActive = false;
+                fadeState.opacity = 1;
+            }
+        } else {
+            drawText(currentAyah.text, currentAyah.translation, currentAyah.number, 1);
+        }
+        
+        // رسم التذييل
+        drawFooter();
+    }
+    
+    // حلقة الرسم
+    function animate() {
+        drawFrame();
+        requestAnimationFrame(animate);
+    }
+    
+    // تحميل الصوت
+    async function loadAudio(reciter, surah, ayah) {
+        const s = surah.toString().padStart(3, '0');
+        const a = ayah.toString().padStart(3, '0');
+        
+        // محاولة روابط مختلفة
+        const urls = [
+            `https://www.everyayah.com/data/${reciter}/${s}${a}.mp3`,
+            `https://www.everyayah.com/data/${reciter.split('_')[0]}_128kbps/${s}${a}.mp3`,
+            `https://www.everyayah.com/data/${reciter.split('_')[0]}_64kbps/${s}${a}.mp3`
+        ];
+        
+        for (let url of urls) {
+            try {
+                const response = await fetch(url);
+                if (response.ok) return await response.arrayBuffer();
+            } catch(e) {}
+        }
+        
+        throw new Error(`فشل تحميل الآية ${ayah}`);
+    }
+    
+    // دمج الصوتيات مع الحفاظ على الجودة والسرعة الأصلية
+    async function mergeAudios(audioBuffers, audioContext) {
+        const sampleRate = audioContext.sampleRate;
+        let totalDuration = 0;
+        for (let i = 0; i < audioBuffers.length; i++) {
+            totalDuration += audioBuffers[i].duration;
+            if (i < audioBuffers.length - 1) totalDuration -= 0.15;
+        }
+        
+        const mergedBuffer = audioContext.createBuffer(2, sampleRate * totalDuration, sampleRate);
+        
+        let offset = 0;
+        for (let i = 0; i < audioBuffers.length; i++) {
+            const buffer = audioBuffers[i];
+            for (let ch = 0; ch < 2; ch++) {
+                const sourceData = buffer.getChannelData(ch);
+                const targetData = mergedBuffer.getChannelData(ch);
+                const overlap = (i < audioBuffers.length - 1) ? Math.floor(audioContext.sampleRate * 0.15) : 0;
+                
+                for (let j = 0; j < sourceData.length; j++) {
+                    if (i > 0 && j < overlap) {
+                        const fadeIn = j / overlap;
+                        const fadeOut = 1 - (j / overlap);
+                        targetData[offset - overlap + j] = (targetData[offset - overlap + j] * fadeOut) + (sourceData[j] * fadeIn);
+                    } else {
+                        targetData[offset + j] = sourceData[j];
+                    }
+                }
+            }
+            offset += buffer.length;
+            if (i < audioBuffers.length - 1) offset -= Math.floor(audioContext.sampleRate * 0.15);
+        }
+        
+        return mergedBuffer;
+    }
+    
+    // تحويل AudioBuffer مباشرة إلى WAV بدون ضغط إضافي
+    function audioBufferToWav(buffer) {
+        const numChannels = buffer.numberOfChannels;
+        const sampleRate = buffer.sampleRate;
+        const bitDepth = 16;
+        
+        let samples = buffer.getChannelData(0);
+        let dataLength = samples.length * 2 * numChannels;
+        let bufferLength = 44 + dataLength;
+        let arrayBuffer = new ArrayBuffer(bufferLength);
+        let view = new DataView(arrayBuffer);
+        
+        function writeString(offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+        
+        writeString(0, 'RIFF');
+        view.setUint32(4, bufferLength - 8, true);
+        writeString(8, 'WAVE');
+        writeString(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, numChannels, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * numChannels * (bitDepth / 8), true);
+        view.setUint16(32, numChannels * (bitDepth / 8), true);
+        view.setUint16(34, bitDepth, true);
+        writeString(36, 'data');
+        view.setUint32(40, dataLength, true);
+        
+        let offset = 44;
+        for (let i = 0; i < samples.length; i++) {
+            for (let ch = 0; ch < numChannels; ch++) {
+                let sample = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+                view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+                offset += 2;
+            }
+        }
+        
+        return new Blob([view], { type: 'audio/wav' });
+    }
+    
+    // إنشاء الفيديو
+    async function generateVideo() {
+        if (isGenerating) return;
+        isGenerating = true;
+        generateBtn.disabled = true;
+        downloadBtn.classList.add('hidden');
+        
+        const start = parseInt(document.getElementById('startAyah').value);
+        const end = parseInt(document.getElementById('endAyah').value);
+        const reciter = document.getElementById('reciterSelect').value;
+        const transitionType = document.getElementById('transitionEffect').value;
+        const useFade = (transitionType === 'fade');
+        
+        try {
+            const audioContext = new AudioContext();
+            const audioBuffers = [];
+            
+            for (let i = start; i <= end; i++) {
+                const audioData = await loadAudio(reciter, currentSurah.number, i);
+                const buffer = await audioContext.decodeAudioData(audioData);
+                audioBuffers.push(buffer);
+            }
+            
+            const mergedBuffer = await mergeAudios(audioBuffers, audioContext);
+            const wavBlob = audioBufferToWav(mergedBuffer);
+            const audioUrl = URL.createObjectURL(wavBlob);
+            const audio = new Audio(audioUrl);
+            
+            const stream = canvas.captureStream(30);
+            const audioDest = audioContext.createMediaStreamDestination();
+            const source = audioContext.createMediaElementSource(audio);
+            source.connect(audioDest);
+            source.connect(audioContext.destination);
+            
+            const combinedStream = new MediaStream([...stream.getVideoTracks(), ...audioDest.stream.getAudioTracks()]);
+            mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
+            recordedChunks = [];
+            
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                finalBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                downloadBtn.classList.remove('hidden');
+                generateBtn.disabled = false;
+                isGenerating = false;
+                URL.revokeObjectURL(audioUrl);
+                audioContext.close();
+            };
+            
+            mediaRecorder.start();
+            audio.play();
+            
+            let lastAyah = start - 1;
+            
+            const syncInterval = setInterval(async () => {
+                if (audio.ended) {
+                    clearInterval(syncInterval);
+                    if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+                    return;
+                }
+                
+                const currentTime = audio.currentTime;
+                let accumulatedTime = 0;
+                
+                for (let i = 0; i < audioBuffers.length; i++) {
+                    const duration = audioBuffers[i].duration;
+                    const adjustedDuration = i < audioBuffers.length - 1 ? duration - 0.15 : duration;
+                    
+                    if (currentTime >= accumulatedTime && currentTime < accumulatedTime + adjustedDuration) {
+                        const newAyahNum = start + i;
+                        if (currentAyah.number !== newAyahNum) {
+                            if (useFade && fadeState.opacity === 1 && !fadeState.isActive) {
+                                fadeState.oldText = currentAyah.text;
+                                fadeState.oldTrans = currentAyah.translation;
+                                fadeState.oldNum = currentAyah.number;
+                                fadeState.isActive = true;
+                                fadeState.opacity = 1;
+                            }
+                            await loadAyah(newAyahNum);
+                        }
+                        break;
+                    }
+                    accumulatedTime += adjustedDuration;
+                }
+            }, 50);
+            
+        } catch (error) {
+            console.error('خطأ:', error);
+            alert('حدث خطأ: ' + error.message);
+            generateBtn.disabled = false;
+            isGenerating = false;
+        }
+    }
+    
+    // تغيير الخلفية
+    changeBgBtn.onclick = () => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = `https://picsum.photos/${canvas.width}/${canvas.height}?random=${Date.now()}`;
+        changeBgBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        img.onload = () => {
+            bgImage = img;
+            changeBgBtn.innerHTML = '<i class="fas fa-image"></i> تغيير الخلفية';
+        };
+        img.onerror = () => {
+            changeBgBtn.innerHTML = '<i class="fas fa-image"></i> تغيير الخلفية';
+        };
+    };
+    
+    // تحميل الفيديو
+    downloadBtn.onclick = () => {
+        if (finalBlob) {
+            const url = URL.createObjectURL(finalBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quran_video_${Date.now()}.webm`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    };
+    
+    // الأحداث
+    document.getElementById('opacitySlider').oninput = (e) => {
+        overlayOpacity = e.target.value / 100;
+        document.getElementById('opacityValue').textContent = e.target.value;
+    };
+    
+    translationLang.onchange = () => {
+        toggleTransFontSize();
+        loadAyah(currentAyah.number);
+    };
+    
+    generateBtn.onclick = generateVideo;
+    
+    // بدء التشغيل
+    setCanvasSize();
+    loadReciters();
+    loadSurahs();
+    toggleTransFontSize(); // تعطيل حجم الترجمة مبدئياً لأن الخيار الافتراضي هو "بدون ترجمة"
+    animate();
+</script>
+</body>
+</html>
