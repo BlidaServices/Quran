@@ -2,900 +2,496 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>صانع الكرومات الاحترافي</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مصلح ملفات الفيديو - إصلاح المدة 0:00</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Amiri:wght@400;700&family=Amiri+Quran&family=Roboto:wght@300;400&display=swap');
-        :root { --deep-emerald: #022c22; --royal-gold: #c5a059; --soft-cream: #fdfaf3; }
-        body { font-family: 'Amiri', serif; min-height: 100vh; background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); color: var(--soft-cream); margin: 0; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
-        .main-wrapper { width: 100%; max-width: 850px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 30px; padding: 25px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 20px; }
-        .controls-panel { background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 20px; border: 1px solid rgba(197, 160, 89, 0.2); order: 2; }
-        .screen-container { width: 100%; position: relative; border-radius: 16px; border: 2px solid rgba(197, 160, 89, 0.2); overflow: hidden; display: flex; align-items: center; justify-content: center; order: 1; transition: all 0.5s ease; background: transparent; }
-        .canvas-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        #videoCanvas { max-width: 100%; max-height: 70vh; width: auto; height: auto; display: block; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease; }
-        select { width: 100%; background: rgba(255, 255, 255, 0.05) !important; color: #fff !important; border: 1.5px solid rgba(197, 160, 89, 0.3) !important; border-radius: 10px; padding: 10px; font-size: 14px; outline: none; backdrop-filter: blur(5px); }
-        select option { background: #022c22; color: #fff; }
-        label { display: block; font-size: 11px; color: var(--royal-gold); margin-bottom: 8px; font-weight: bold; }
-        .ratio-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        .ratio-item { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(197, 160, 89, 0.2); border-radius: 12px; width: 60px; height: 60px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
-        .ratio-item:hover { background: rgba(197, 160, 89, 0.1); border-color: var(--royal-gold); }
-        .ratio-item.active { background: rgba(197, 160, 89, 0.2); border-color: var(--royal-gold); box-shadow: 0 0 15px rgba(197, 160, 89, 0.1); }
-        .ratio-item.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
-        .shape { border: 2px solid currentColor; border-radius: 2px; opacity: 0.8; }
-        .shape-16-9 { width: 30px; height: 17px; }
-        .shape-9-16 { width: 17px; height: 30px; }
-        .shape-1-1 { width: 24px; height: 24px; }
-        .btn-generate { background: linear-gradient(45deg, #c5a059, #e2c28a); color: #022c22; font-weight: 800; padding: 15px; font-size: 16px; border-radius: 12px; width: 100%; cursor: pointer; border: none; transition: all 0.3s ease; }
-        .btn-generate:hover:not(:disabled) { background: linear-gradient(45deg, #e2c28a, #f0d89c); transform: translateY(-2px); box-shadow: 0 10px 25px rgba(197, 160, 89, 0.3); }
-        .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
-        .floating-btn { position: absolute; top: 10px; z-index: 40; background: rgba(0, 0, 0, 0.7); color: var(--royal-gold); border: 1px solid var(--royal-gold); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; backdrop-filter: blur(5px); display: flex; align-items: center; gap: 5px; transition: all 0.3s ease; height: 38px; min-width: 110px; justify-content: center; }
-        .bg-btn { right: 10px; }
-        .download-btn { left: 10px; }
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]:disabled { opacity: 0.3; cursor: not-allowed; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: rgba(197, 160, 89, 0.3); border-radius: 5px; }
-        input[type=range]::-webkit-slider-thumb { height: 18px; width: 18px; border-radius: 50%; background: var(--royal-gold); cursor: pointer; -webkit-appearance: none; margin-top: -6px; }
-        .toggle-container { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(197, 160, 89, 0.1); }
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--royal-gold); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            direction: rtl;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #a0a0a0;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .upload-icon { font-size: 50px; margin-bottom: 15px; }
+        .upload-text { color: #fff; font-size: 16px; margin-bottom: 5px; }
+        .upload-hint { color: #a0a0a0; font-size: 12px; }
+        
+        #fileInput { display: none; }
+        
+        .file-info {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .file-info.show { display: block; }
+        .file-name { color: #fff; font-size: 14px; word-break: break-all; }
+        .file-size { color: #a0a0a0; font-size: 12px; }
+        
+        .video-preview {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            max-height: 300px;
+            background: #000;
+        }
+        
+        .video-preview.show { display: block; }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            display: none;
+        }
+        
+        .btn-success.show { display: block; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .progress-container.show { display: block; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text { color: #a0a0a0; text-align: center; font-size: 14px; }
+        
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .status-message.success {
+            display: block;
+            background: rgba(56, 239, 125, 0.1);
+            border: 1px solid rgba(56, 239, 125, 0.3);
+            color: #38ef7d;
+        }
+        
+        .status-message.error {
+            display: block;
+            background: rgba(239, 56, 56, 0.1);
+            border: 1px solid rgba(239, 56, 56, 0.3);
+            color: #ef3838;
+        }
+        
+        .status-message.info {
+            display: block;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #667eea;
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .info-box h3 { color: #667eea; margin-bottom: 15px; font-size: 18px; }
+        
+        .info-box ul {
+            color: #a0a0a0;
+            padding-right: 20px;
+        }
+        
+        .info-box li { margin-bottom: 8px; font-size: 14px; line-height: 1.6; }
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <div class="screen-container">
-            <button id="changeBgBtn" class="floating-btn bg-btn">
-                <i class="fas fa-image"></i> تغيير الخلفية
-            </button>
-            <button id="downloadVideo" class="floating-btn download-btn hidden">
-                <i class="fas fa-download"></i> تحميل المقطع
-            </button>
-            <div class="canvas-wrapper">
-                <canvas id="videoCanvas" width="1080" height="1920"></canvas>
-            </div>
+    <div class="container">
+        <h1>🔧 مصلح فيديوهات</h1>
+        <p class="subtitle">أصلح مشكلة المدة 0:00 في ملفات MP4 و WebM</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">اختر ملف فيديو أو اسحبه هنا</div>
+            <div class="upload-hint">MP4 أو WebM - سيتم إصلاح المدة تلقائياً</div>
         </div>
-
-        <div class="controls-panel">
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div><label>القارئ</label><select id="reciterSelect"></select></div>
-                <div><label>السورة</label><select id="surahSelect"></select></div>
+        
+        <input type="file" id="fileInput" accept="video/*">
+        
+        <div class="file-info" id="fileInfo">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+        </div>
+        
+        <video class="video-preview" id="videoPreview" controls></video>
+        
+        <button class="btn btn-primary" id="fixBtn" disabled>
+            <span id="fixBtnText">🔧 بدء الإصلاح</span>
+        </button>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div><label>من الآية</label><select id="startAyah"></select></div>
-                <div><label>إلى الآية</label><select id="endAyah"></select></div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label>حجم النص العربي</label>
-                    <select id="arabicFontSizeSelect">
-                        <option value="50">صغير (50)</option>
-                        <option value="60">متوسط (60)</option>
-                        <option value="70" selected>عادي (70)</option>
-                        <option value="80">كبير (80)</option>
-                        <option value="90">كبير جداً (90)</option>
-                    </select>
-                </div>
-                <div>
-                    <label>حجم نص الترجمة</label>
-                    <select id="transFontSizeSelect">
-                        <option value="25">صغير جداً (25)</option>
-                        <option value="30">صغير (30)</option>
-                        <option value="35">متوسط (35)</option>
-                        <option value="45" selected>عادي (45)</option>
-                        <option value="55">كبير (55)</option>
-                        <option value="65">كبير جداً (65)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label>اللغة</label>
-                <select id="translationLang">
-                    <option value="en.sahih">الإنجليزية</option>
-                    <option value="fr.hamidullah">الفرنسية</option>
-                    <option value="es.cortes">الإسبانية</option>
-                    <option value="pt.elhayek">البرتغالية</option>
-                    <option value="de.aburida">الألمانية</option>
-                    <option value="tr.diyanet">التركية</option>
-                    <option value="ru.kuliev">الروسية</option>
-                </select>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
-                <div class="toggle-container">
-                    <span class="text-xs">إظهار الترجمة</span>
-                    <label class="switch"><input type="checkbox" id="showTranslation" checked><span class="slider"></span></label>
-                </div>
-                <div class="toggle-container">
-                    <span class="text-xs">إظهار اسم السورة والقارئ</span>
-                    <label class="switch"><input type="checkbox" id="showSurahName" checked><span class="slider"></span></label>
-                </div>
-                <div class="toggle-container">
-                    <span class="text-xs">تأثير الانتقال الناعم</span>
-                    <label class="switch"><input type="checkbox" id="useFade" checked><span class="slider"></span></label>
-                </div>
-                <div class="toggle-container">
-                    <span class="text-xs">تحريك الكاميرا (بانوراما)</span>
-                    <label class="switch"><input type="checkbox" id="usePanorama" checked><span class="slider"></span></label>
-                </div>
-            </div>
-
-            <div class="mb-6">
-                <label class="flex justify-between">تعتيم الخلفية <span><span id="opacityVal">80</span>%</span></label>
-                <input type="range" id="opacitySlider" min="0" max="100" value="80">
-            </div>
-            
-            <div class="ratio-grid" id="ratioContainer">
-                <div class="ratio-item" data-ratio="16/9">
-                    <div class="shape shape-16-9"></div>
-                </div>
-                <div class="ratio-item active" data-ratio="9/16">
-                    <div class="shape shape-9-16"></div>
-                </div>
-                <div class="ratio-item" data-ratio="1/1">
-                    <div class="shape shape-1-1"></div>
-                </div>
-            </div>
-            
-            <button id="mergeBtn" class="btn-generate">
-                <i class="fas fa-magic ml-2"></i>
-                <span id="btnText">توليد الكروما</span>
-            </button>
+            <div class="progress-text" id="progressText">جاري المعالجة...</div>
+        </div>
+        
+        <div class="status-message" id="statusMessage"></div>
+        
+        <button class="btn btn-success" id="downloadBtn">
+            ⬇️ تحميل الفيديو المُصلَح
+        </button>
+        
+        <div class="info-box">
+            <h3>💡 كيف تعمل الأداة؟</h3>
+            <ul>
+                <li>🎯 <strong>اختر الفيديو:</strong> أي ملف MP4 أو WebM</li>
+                <li>🔍 <strong>تحليل تلقائي:</strong> نكتشف المدة الحقيقية للفيديو</li>
+                <li>🔧 <strong>إعادة ترميز:</strong> ننشئ نسخة جديدة بمدة صحيحة</li>
+                <li>✅ <strong>جاهز للنشر:</strong> الفيديو الجديد يعمل على جميع المنصات</li>
+            </ul>
         </div>
     </div>
+
     <script>
-        const reciters = [
-            { id: "Yasser_Ad-Dussary_128kbps", name: "ياسر الدوسري" },
-            { id: "MaherAlMuaiqly128kbps", name: "ماهر المعيقلي" },
-            { id: "Abu_Bakr_Ash-Shaatree_128kbps", name: "أبوبكر الشاطري" },
-            { id: "Ibrahim_Akhdar_32kbps", name: "ابراهيم الاخضر" },
-            { id: "Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net", name: "أحمد العجمي" },
-            { id: "Ayman_Sowaid_64kbps", name: "أيمن رشدي سويد" },
-            { id: "Ghamadi_40kbps", name: "سعد الغامدي" },
-            { id: "Abdul_Basit_Murattal_192kbps", name: "عبدالباسط عبدالصمد مرتل" },
-            { id: "Abdul_Basit_Mujawwad_128kbps", name: "عبدالباسط عبدالصمد مجود" },
-            { id: "Abdurrahmaan_As-Sudais_192kbps", name: "عبدالرحمن السديس" },
-            { id: "Abdullah_Basfar_192kbps", name: "عبدالله بصفر" },
-            { id: "Abdullaah_3awwaad_Al-Juhaynee_128kbps", name: "عبد الله عواد الجهني" },
-            { id: "Ali_Jaber_64kbps", name: "علي جابر" },
-            { id: "Hudhaify_128kbps", name: "علي الحذيفي" },
-            { id: "Fares_Abbad_64kbps", name: "فارس عباد" },
-            { id: "khalefa_al_tunaiji_64kbps", name: "خليفة الطنيجي" },
-            { id: "Husary_128kbps_Mujawwad", name: "محمود خليل الحصري مجود" },
-            { id: "Husary_128kbps", name: "محمود خليل الحصري مرتل" },
-            { id: "Minshawy_Mujawwad_192kbps", name: "محمد صديق المنشاوي مجود" },
-            { id: "Minshawy_Murattal_128kbps", name: "محمد صديق المنشاوي مرتل" },
-            { id: "Mohammad_al_Tablaway_128kbps", name: "محمد الطبلاوي" },
-            { id: "Muhammad_Ayyoub_128kbps", name: "محمد أيوب" },
-            { id: "Muhammad_Jibreel_128kbps", name: "محمد جبريل" },
-            { id: "Alafasy_128kbps", name: "مشاري العفاسي" },
-            { id: "Nasser_Alqatami_128kbps", name: "ناصر القطامي" },
-            { id: "Hani_Rifai_192kbps", name: "هاني الرفاعي" }
-        ];
-
-        const surahSelect = document.getElementById('surahSelect');
-        const startSelect = document.getElementById('startAyah');
-        const endSelect = document.getElementById('endAyah');
-        const reciterSelect = document.getElementById('reciterSelect');
-        const translationLang = document.getElementById('translationLang');
-        const transFontSizeSelect = document.getElementById('transFontSizeSelect');
-        const arabicFontSizeSelect = document.getElementById('arabicFontSizeSelect');
-        const ratioItems = document.querySelectorAll('.ratio-item');
-        const mergeBtn = document.getElementById('mergeBtn');
-        const changeBgBtn = document.getElementById('changeBgBtn');
-        const opacitySlider = document.getElementById('opacitySlider');
-        const opacityValDisplay = document.getElementById('opacityVal');
-        const btnText = document.getElementById('btnText');
-        const canvas = document.getElementById('videoCanvas');
-        const ctx = canvas.getContext('2d');
-        const downloadVideo = document.getElementById('downloadVideo');
-
-        const showTranslationCheck = document.getElementById('showTranslation');
-        const showSurahNameCheck = document.getElementById('showSurahName');
-        const useFadeCheck = document.getElementById('useFade');
-        const usePanoramaCheck = document.getElementById('usePanorama');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const videoPreview = document.getElementById('videoPreview');
+        const fixBtn = document.getElementById('fixBtn');
+        const fixBtnText = document.getElementById('fixBtnText');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const statusMessage = document.getElementById('statusMessage');
+        const downloadBtn = document.getElementById('downloadBtn');
         
-        let audioCtx, timestamps = [], mediaRecorder, recordedChunks = [], 
-            currentAyahText = "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ", 
-            currentTranslation = "",
-            currentAyahNumber = 1, currentSurahName = "الفاتحة", currentReciterName = "", finalBlob = null, 
-            bgImage = null, currentRatio = "9/16", overlayOpacity = 0.8;
+        let selectedFile = null;
+        let fixedBlob = null;
+        let videoDuration = 0;
 
-        let panoramaStartTime = null;
-        const panoramaCycleTime = 120000;
+        // فتح نافذة الاختيار
+        uploadArea.addEventListener('click', () => fileInput.click());
 
-        let fadeState = {
-            oldText: "",
-            oldTrans: "",
-            oldNum: null,
-            opacity: 1,
-            isTransitioning: false
-        };
+        // السحب والإفلات
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+        });
 
-        async function init() {
-            reciterSelect.innerHTML = '';
-            reciters.forEach(r => {
-                const opt = document.createElement('option');
-                opt.value = r.id; opt.textContent = r.name;
-                reciterSelect.appendChild(opt);
-            });
-            const res = await fetch('https://api.alquran.cloud/v1/surah');
-            const data = await res.json();
-            surahSelect.innerHTML = '';
-            data.data.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.number; opt.textContent = `${s.number}. ${s.name}`; opt.dataset.max = s.numberOfAyahs;
-                opt.dataset.sname = s.name;
-                if(s.number === 1) opt.selected = true;
-                surahSelect.appendChild(opt);
-            });
-            updateAyahLists();
-            surahSelect.onchange = () => { updateAyahLists(); fetchPreviewAyah(startSelect.value); };
-            startSelect.onchange = () => { handleStartChange(); fetchPreviewAyah(startSelect.value); };
-            endSelect.onchange = () => { fetchPreviewAyah(endSelect.value); };
-            translationLang.onchange = () => { fetchPreviewAyah(startSelect.value); };
-            transFontSizeSelect.onchange = () => { fetchPreviewAyah(startSelect.value); };
-            arabicFontSizeSelect.onchange = () => { fetchPreviewAyah(startSelect.value); };
-            reciterSelect.onchange = () => { currentReciterName = reciterSelect.selectedOptions[0].textContent; };
-            
-            currentReciterName = reciterSelect.selectedOptions[0].textContent;
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        });
 
-            ratioItems.forEach(item => {
-                item.onclick = () => {
-                    if (mergeBtn.disabled) return;
-                    ratioItems.forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                    currentRatio = item.dataset.ratio;
-                    updateCanvasSize();
-                    fetchPreviewAyah(startSelect.value);
-                };
-            });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+        });
 
-            opacitySlider.oninput = (e) => {
-                overlayOpacity = e.target.value / 100;
-                opacityValDisplay.textContent = e.target.value;
-            };
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
 
-            updateCanvasSize();
-            fetchPreviewAyah(1);
-            requestAnimationFrame(drawLoop);
-        }
-
-        async function fetchPreviewAyah(aNum) {
-            if (!surahSelect.value || !aNum) return;
-            try {
-                const sNum = surahSelect.value;
-                const lang = translationLang.value;
-                const [tRes, eRes] = await Promise.all([
-                    fetch(`https://api.alquran.cloud/v1/ayah/${sNum}:${aNum}`),
-                    fetch(`https://api.alquran.cloud/v1/ayah/${sNum}:${aNum}/${lang}`)
-                ]);
-                const tData = await tRes.json();
-                const eData = await eRes.json();
-                
-                let rawText = tData.data.text;
-                if (aNum === "1" && sNum !== "1" && sNum !== "9") {
-                    const p = rawText.split(' ');
-                    if (p.length > 4) rawText = p.slice(4).join(' ').trim();
-                }
-                
-                currentAyahText = rawText;
-                currentTranslation = eData.data.text;
-                currentAyahNumber = aNum;
-                currentSurahName = surahSelect.selectedOptions[0].dataset.sname;
-            } catch (e) {
-                console.error("Preview failed", e);
-            }
-        }
-
-        function updateCanvasSize() {
-            if (currentRatio === "16/9") { canvas.width = 1920; canvas.height = 1080; }
-            else if (currentRatio === "9/16") { canvas.width = 1080; canvas.height = 1920; }
-            else if (currentRatio === "1/1") { canvas.width = 1080; canvas.height = 1080; }
-            downloadVideo.classList.add('hidden');
-            finalBlob = null;
-        }
-
-        changeBgBtn.onclick = () => {
-            downloadVideo.classList.add('hidden');
-            finalBlob = null;
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = `https://picsum.photos/${canvas.width + 500}/${canvas.height}?nature,religious&sig=${Math.random()}`;
-            changeBgBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            img.onload = () => {
-                bgImage = img;
-                changeBgBtn.innerHTML = '<i class="fas fa-image"></i> تغيير الخلفية';
-                panoramaStartTime = null;
-            };
-        };
-
-        function handleStartChange() {
-            const start = parseInt(startSelect.value);
-            const max = parseInt(surahSelect.selectedOptions[0].dataset.max);
-            endSelect.innerHTML = '';
-            for(let i=start; i<=max; i++) {
-                const opt = document.createElement('option');
-                opt.value = i; opt.textContent = i;
-                endSelect.appendChild(opt);
-            }
-        }
-
-        function updateAyahLists() {
-            const selected = surahSelect.selectedOptions[0];
-            const max = parseInt(selected.dataset.max);
-            currentSurahName = selected.dataset.sname || "";
-            startSelect.innerHTML = '';
-            for(let i=1; i<=max; i++) {
-                const opt = document.createElement('option');
-                opt.value = i; opt.textContent = i;
-                if(i === 1) opt.selected = true;
-                startSelect.appendChild(opt);
-            }
-            handleStartChange();
-        }
-
-        function setBtnState(text, isLoading) {
-            btnText.textContent = text;
-            mergeBtn.disabled = isLoading;
-            opacitySlider.disabled = isLoading;
-            surahSelect.disabled = isLoading;
-            startSelect.disabled = isLoading;
-            endSelect.disabled = isLoading;
-            reciterSelect.disabled = isLoading;
-            translationLang.disabled = isLoading;
-            transFontSizeSelect.disabled = isLoading;
-            arabicFontSizeSelect.disabled = isLoading;
-            showTranslationCheck.disabled = isLoading;
-            showSurahNameCheck.disabled = isLoading;
-            useFadeCheck.disabled = isLoading;
-            usePanoramaCheck.disabled = isLoading;
-
-            ratioItems.forEach(item => {
-                if (isLoading) item.classList.add('disabled');
-                else item.classList.remove('disabled');
-            });
-
-            if (isLoading) {
-                downloadVideo.classList.add('hidden');
-                changeBgBtn.classList.add('hidden');
-            } else {
-                changeBgBtn.classList.remove('hidden');
-            }
-        }
-
-        function toArabicDigits(n) {
-            if (!n) return "";
-            return n.toString().replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
-        }
-
-        function drawTextAt(text, translation, ayahNum, opacity) {
-            if (!text) return;
-            ctx.save();
-            ctx.globalAlpha = opacity;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
-            ctx.shadowBlur = 10;
-
-            const userArabicSize = parseInt(arabicFontSizeSelect.value);
-            const arabicFontSize = canvas.width < 1100 ? userArabicSize * 0.85 : userArabicSize;
-            
-            const userTransFontSize = parseInt(transFontSizeSelect.value);
-            const transFontSize = canvas.width < 1100 ? userTransFontSize * 0.8 : userTransFontSize;
-            
-            const maxWidth = canvas.width * 0.85;
-            
-            let symbol = ayahNum ? "۝" + toArabicDigits(ayahNum) : "";
-            let fullText = text + symbol;
-
-            ctx.font = `bold ${arabicFontSize}px 'Amiri'`;
-            const words = fullText.split(' ');
-            let arabicLines = [], currLine = '';
-            
-            words.forEach((w) => {
-                let test = currLine + (currLine ? ' ' : '') + w;
-                if(ctx.measureText(test).width > maxWidth) { 
-                    arabicLines.push(currLine); 
-                    currLine = w; 
-                } else { 
-                    currLine = test; 
-                }
-            });
-            arabicLines.push(currLine);
-
-            let transLines = [];
-            if(translation && showTranslationCheck.checked) {
-                ctx.font = `400 ${transFontSize}px 'Roboto'`;
-                const tWords = translation.split(' ');
-                let tLine = '';
-                tWords.forEach(w => {
-                    let test = tLine + (tLine ? ' ' : '') + w;
-                    if(ctx.measureText(test).width > maxWidth) { transLines.push(tLine); tLine = w; }
-                    else { tLine = test; }
-                });
-                transLines.push(tLine);
+        function handleFile(file) {
+            if (!file.type.startsWith('video/')) {
+                showStatus('error', '❌ الرجاء اختيار ملف فيديو صالح');
+                return;
             }
 
-            const arbLineHeight = arabicFontSize * 1.4;
-            const trsLineHeight = transFontSize * 1.3;
-            const gap = 45;
-            const totalContentHeight = (arabicLines.length * arbLineHeight) + (transLines.length > 0 ? (transLines.length * trsLineHeight) + gap : 0);
+            selectedFile = file;
             
-            let currentY = (canvas.height / 2) - (totalContentHeight / 2) + (arbLineHeight / 2);
-
-            ctx.font = `bold ${arabicFontSize}px 'Amiri'`;
-            ctx.fillStyle = "white";
-            arabicLines.forEach((line, i) => {
-                ctx.fillText(line.trim(), canvas.width / 2, currentY + (i * arbLineHeight));
-            });
-
-            if(transLines.length > 0) {
-                currentY += (arabicLines.length * arbLineHeight) + gap - (arbLineHeight/2) + (trsLineHeight/2);
-                ctx.font = `400 ${transFontSize}px 'Roboto'`;
-                ctx.fillStyle = "white";
-                ctx.shadowBlur = 15;
-                transLines.forEach((line, i) => {
-                    ctx.fillText(line.trim(), canvas.width / 2, currentY + (i * trsLineHeight));
-                });
-            }
-            ctx.restore();
-        }
-
-        function drawLoop(timestamp) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // عرض المعلومات
+            fileName.textContent = `📄 ${file.name}`;
+            fileSize.textContent = `📦 الحجم: ${formatFileSize(file.size)}`;
+            fileInfo.classList.add('show');
             
-            if (bgImage) {
-                const baseScale = Math.max(canvas.width / bgImage.width, canvas.height / bgImage.height);
-                const drawScale = usePanoramaCheck.checked ? baseScale * 1.3 : baseScale;
-                
-                const imgW = bgImage.width * drawScale;
-                const imgH = bgImage.height * drawScale;
-                
-                let offsetX = (canvas.width - imgW) / 2;
-                let offsetY = (canvas.height - imgH) / 2;
-
-                if (usePanoramaCheck.checked) {
-                    if (!panoramaStartTime) panoramaStartTime = timestamp;
-                    const elapsed = (timestamp - panoramaStartTime) % panoramaCycleTime;
-                    const progress = elapsed / panoramaCycleTime;
-                    const osc = (Math.sin(progress * 2 * Math.PI - Math.PI / 2) + 1) / 2;
-                    const maxMove = (imgW - canvas.width);
-                    offsetX = -(maxMove * osc);
-                }
-
-                ctx.drawImage(bgImage, offsetX, offsetY, imgW, imgH);
-                ctx.fillStyle = `rgba(0, 0, 0, ${overlayOpacity})`;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            } else {
-                ctx.fillStyle = "black";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
-
-            if (showSurahNameCheck.checked) {
-                ctx.save();
-                const footerFontSize = canvas.width < 1100 ? 40 : 50;
-                const padding = 60;
-                const bottomY = canvas.height - footerFontSize * 1.2;
-
-                if (currentSurahName) {
-                    ctx.font = `400 ${footerFontSize}px 'Amiri Quran'`;
-                    ctx.fillStyle = `rgba(197, 160, 89, 0.9)`;
-                    ctx.textAlign = "left";
-                    let sLabel = currentSurahName.includes("سُورَة") ? currentSurahName : `سُورَةُ ${currentSurahName}`;
-                    ctx.fillText(sLabel, padding, bottomY);
-                }
-
-                if (currentReciterName) {
-                    ctx.font = `400 ${footerFontSize * 0.7}px 'Tajawal'`;
-                    ctx.fillStyle = `rgba(253, 250, 243, 0.7)`;
-                    ctx.textAlign = "right";
-                    ctx.fillText(`بصوت: ${currentReciterName}`, canvas.width - padding, bottomY);
-                }
-
-                ctx.strokeStyle = `rgba(197, 160, 89, 0.3)`;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(padding, bottomY + 15);
-                ctx.lineTo(canvas.width - padding, bottomY + 15);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            if (fadeState.isTransitioning) {
-                drawTextAt(fadeState.oldText, fadeState.oldTrans, fadeState.oldNum, 1 - fadeState.opacity);
-                drawTextAt(currentAyahText, currentTranslation, currentAyahNumber, fadeState.opacity);
-                fadeState.opacity += 0.025; 
-                if (fadeState.opacity >= 1) {
-                    fadeState.opacity = 1;
-                    fadeState.isTransitioning = false;
-                }
-            } else {
-                drawTextAt(currentAyahText, currentTranslation, currentAyahNumber, 1);
-            }
-
-            requestAnimationFrame(drawLoop);
-        }
-
-        async function fetchAudio(reciter, surah, ayah) {
-            const s = surah.toString().padStart(3, '0');
-            const a = ayah.toString().padStart(3, '0');
-            const cleanReciter = reciter.split('_')[0];
-            const freqs = ['192kbps', '128kbps', '64kbps', '32kbps'];
-            const vars = [reciter, ...freqs.flatMap(f => [`${cleanReciter}_${f}`, `${cleanReciter}${f}`])];
-            const uniqueVars = [...new Set(vars)];
-            for (let v of uniqueVars) {
-                try {
-                    const res = await fetch(`https://www.everyayah.com/data/${v}/${s}${a}.mp3`);
-                    if (res.ok) return await res.arrayBuffer();
-                } catch(e) {}
-            }
-            throw new Error(`فشل تحميل صوت الآية ${ayah}`);
-        }
-
-        mergeBtn.onclick = async () => {
-            try {
-                if (mediaRecorder && mediaRecorder.state !== "inactive") return;
-                
-                downloadVideo.classList.add('hidden');
-                finalBlob = null;
-                setBtnState("جاري التحميل...", true);
-                
-                if (audioCtx) {
-                    await audioCtx.close().catch(() => {});
-                }
-                
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)({
-                    sampleRate: 44100
-                });
-                
-                const surahNum = surahSelect.value;
-                const start = parseInt(startSelect.value);
-                const end = parseInt(endSelect.value);
-                const reciter = reciterSelect.value;
-                const lang = translationLang.value;
-                currentReciterName = reciterSelect.selectedOptions[0].textContent;
-
-                const [tRes, eRes] = await Promise.all([
-                    fetch(`https://api.alquran.cloud/v1/surah/${surahNum}`),
-                    fetch(`https://api.alquran.cloud/v1/surah/${surahNum}/${lang}`)
-                ]);
-                
-                const tData = await tRes.json();
-                const eData = await eRes.json();
-                const textSource = tData.data.ayahs;
-                const transSource = eData.data.ayahs;
-
-                timestamps = [];
-                const audioBuffers = [];
-                let offset = 0;
-                for (let i = start; i <= end; i++) {
-                    setBtnState(`جاري تحميل الآية ${i} من ${end}...`, true);
-                    const audioData = await fetchAudio(reciter, surahNum, i);
-                    const audioBuffer = await audioCtx.decodeAudioData(audioData);
-                    let rawText = textSource[i - 1].text;
-                    let transText = transSource[i - 1].text;
-
-                    if (i === 1 && surahNum !== "1" && surahNum !== "9") {
-                        const p = rawText.split(' ');
-                        if (p.length > 4) rawText = p.slice(4).join(' ').trim();
-                    }
-
-                    audioBuffers.push(audioBuffer);
-                    timestamps.push({ 
-                        start: offset, 
-                        end: offset + audioBuffer.duration, 
-                        text: rawText, 
-                        trans: transText,
-                        ayahNum: i 
-                    });
-                    offset += audioBuffer.duration - 0.2;
-                }
-                
-                setBtnState("جاري دمج الصوتيات...", true);
-                const merged = mergeBuffers(audioBuffers, 0.2);
-                const wavBlob = bufferToWav(merged);
-                const audioUrl = URL.createObjectURL(wavBlob);
-                const tempAudio = new Audio(audioUrl);
-                
-                tempAudio.onloadeddata = () => startRecording(tempAudio, audioUrl);
-                tempAudio.load();
-            } catch (e) {
-                alert(e.message);
-                setBtnState("توليد الكروما", false);
-            }
-        };
-
-        function startRecording(audioElement, audioUrl) {
-            setBtnState("جاري التسجيل...", true);
+            // معاينة الفيديو
+            const url = URL.createObjectURL(file);
+            videoPreview.src = url;
+            videoPreview.classList.add('show');
             
-            // استخدام MediaRecorder مع WebM (الأكثر توافقاً)
-            const stream = canvas.captureStream(30);
-            
-            const audioDest = audioCtx.createMediaStreamDestination();
-            const source = audioCtx.createMediaElementSource(audioElement);
-            source.connect(audioDest);
-            source.connect(audioCtx.destination);
-            
-            const combined = new MediaStream([
-                ...stream.getVideoTracks(), 
-                ...audioDest.stream.getAudioTracks()
-            ]);
-
-            // استخدام WebM بدلاً من MP4 للتسجيل الأولي
-            const options = { 
-                mimeType: 'video/webm;codecs=vp8,opus',
-                videoBitsPerSecond: 15000000,
-                audioBitsPerSecond: 256000
-            };
-
-            mediaRecorder = new MediaRecorder(combined, options);
-            recordedChunks = [];
-            
-            mediaRecorder.ondataavailable = e => { 
-                if (e.data && e.data.size > 0) {
-                    recordedChunks.push(e.data);
-                }
-            };
-            
-            mediaRecorder.onstop = () => {
-                // إنشاء Blob من WebM
-                const webmBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            // الحصول على المدة الحقيقية
+            videoPreview.onloadedmetadata = () => {
+                videoDuration = videoPreview.duration;
+                const minutes = Math.floor(videoDuration / 60);
+                const seconds = Math.floor(videoDuration % 60);
                 
-                // تحويل WebM إلى MP4 مع مدة صحيحة
-                setBtnState("جاري تحسين الملف للمنصات...", true);
-                convertWebMToMP4(webmBlob).then(mp4Blob => {
-                    finalBlob = mp4Blob;
-                    downloadVideo.classList.remove('hidden');
-                    setBtnState("توليد الكروما", false);
-                    
-                    // تنظيف
-                    URL.revokeObjectURL(audioUrl);
-                    audioElement.pause();
-                    audioElement.src = "";
-                }).catch(error => {
-                    console.error('فشل التحويل:', error);
-                    // استخدام WebM كخطة بديلة
-                    finalBlob = webmBlob;
-                    downloadVideo.classList.remove('hidden');
-                    setBtnState("توليد الكروما", false);
-                    
-                    // تنظيف
-                    URL.revokeObjectURL(audioUrl);
-                    audioElement.pause();
-                    audioElement.src = "";
-                });
-            };
-            
-            // تسجيل لمدة الفيديو مع طلب البيانات كل ثانية
-            mediaRecorder.start(1000);
-            audioElement.play();
-            
-            let lastAyah = null;
-            const sync = () => {
-                if (!mediaRecorder || mediaRecorder.state !== "recording") return;
-                const ct = audioElement.currentTime;
-                
-                const active = timestamps.find(t => ct >= (t.start - 0.4) && ct < (t.end - 0.4));
-                
-                if (active) {
-                    if (lastAyah !== active.ayahNum) {
-                        if (useFadeCheck.checked && lastAyah !== null) {
-                            fadeState.oldText = currentAyahText;
-                            fadeState.oldTrans = currentTranslation;
-                            fadeState.oldNum = currentAyahNumber;
-                            fadeState.opacity = 0;
-                            fadeState.isTransitioning = true;
-                        }
-                        currentAyahText = active.text;
-                        currentTranslation = active.trans;
-                        currentAyahNumber = active.ayahNum;
-                        lastAyah = active.ayahNum;
-                    }
-                }
-                
-                if(!audioElement.ended) {
-                    requestAnimationFrame(sync);
+                if (videoDuration > 0) {
+                    showStatus('info', `📊 المدة الحقيقية للفيديو: ${minutes}:${seconds.toString().padStart(2, '0')} - جاهز للإصلاح`);
                 } else {
-                    // انتظر قليلاً ثم توقف
-                    setTimeout(() => {
-                        if (mediaRecorder && mediaRecorder.state === "recording") {
-                            mediaRecorder.requestData();
-                            setTimeout(() => {
-                                if (mediaRecorder && mediaRecorder.state === "recording") {
-                                    mediaRecorder.stop();
-                                }
-                            }, 100);
-                        }
-                    }, 500);
+                    showStatus('error', '⚠️ لم يتم اكتشاف مدة صالحة للفيديو');
                 }
+                
+                fixBtn.disabled = false;
+                fixBtnText.textContent = '🔧 بدء الإصلاح';
+                downloadBtn.classList.remove('show');
             };
-            sync();
+            
+            videoPreview.onerror = () => {
+                showStatus('error', '❌ تعذر تحميل الفيديو - قد يكون الملف تالفاً');
+                fixBtn.disabled = true;
+            };
         }
 
-        // دالة بسيطة لتحويل WebM إلى MP4 مع مدة صحيحة
-        async function convertWebMToMP4(webmBlob) {
-            return new Promise((resolve, reject) => {
-                // استخدام عنصر فيديو مؤقت للتحويل
-                const tempVideo = document.createElement('video');
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                
-                tempVideo.src = URL.createObjectURL(webmBlob);
-                tempVideo.muted = true;
-                
-                tempVideo.onloadedmetadata = async () => {
-                    tempCanvas.width = canvas.width;
-                    tempCanvas.height = canvas.height;
-                    
-                    const fps = 30;
-                    const duration = tempVideo.duration;
-                    const totalFrames = Math.ceil(duration * fps);
-                    const frameTime = 1000 / fps;
-                    
-                    // إعادة تسجيل الفيديو مع بيانات المدة الصحيحة
-                    const videoStream = tempCanvas.captureStream(fps);
-                    
-                    // استخدام AudioContext لإنشاء مسار صوتي جديد
-                    const audioCtx2 = new AudioContext();
-                    const audioSource = audioCtx2.createMediaElementSource(tempVideo);
-                    const audioDest2 = audioCtx2.createMediaStreamDestination();
-                    audioSource.connect(audioDest2);
-                    
-                    const combinedStream = new MediaStream([
-                        ...videoStream.getVideoTracks(),
-                        ...audioDest2.stream.getAudioTracks()
-                    ]);
-                    
-                    const newRecorder = new MediaRecorder(combinedStream, {
-                        mimeType: MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.42E01E,mp4a.40.2') 
-                            ? 'video/mp4;codecs=avc1.42E01E,mp4a.40.2'
-                            : 'video/webm;codecs=vp9,opus',
-                        videoBitsPerSecond: 15000000,
-                        audioBitsPerSecond: 256000
-                    });
-                    
-                    const newChunks = [];
-                    
-                    newRecorder.ondataavailable = e => {
-                        if (e.data && e.data.size > 0) {
-                            newChunks.push(e.data);
-                        }
-                    };
-                    
-                    newRecorder.onstop = () => {
-                        const outputBlob = new Blob(newChunks, { 
-                            type: newRecorder.mimeType.includes('mp4') ? 'video/mp4' : 'video/webm' 
-                        });
-                        
-                        // إضافة مدة يدوية للـ WebM إذا لزم الأمر
-                        if (outputBlob.type === 'video/webm') {
-                            addDurationToWebM(outputBlob, duration).then(resolve).catch(() => resolve(outputBlob));
-                        } else {
-                            resolve(outputBlob);
-                        }
-                        
-                        URL.revokeObjectURL(tempVideo.src);
-                        audioCtx2.close();
-                    };
-                    
-                    newRecorder.start();
-                    tempVideo.currentTime = 0;
-                    tempVideo.play();
-                    
-                    const processFrames = () => {
-                        if (tempVideo.ended || tempVideo.currentTime >= duration) {
-                            newRecorder.requestData();
-                            setTimeout(() => {
-                                if (newRecorder.state === 'recording') {
-                                    newRecorder.stop();
-                                }
-                            }, 200);
-                            return;
-                        }
-                        
-                        tempCtx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
-                        requestAnimationFrame(processFrames);
-                    };
-                    
-                    processFrames();
-                };
-                
-                tempVideo.onerror = () => reject(new Error('فشل تحميل الفيديو المؤقت'));
-            });
-        }
-
-        // إضافة بيانات المدة لـ WebM (حل احتياطي)
-        async function addDurationToWebM(blob, duration) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = function() {
-                    const buffer = new Uint8Array(reader.result);
-                    // إضافة metadata بسيط مع المدة
-                    const durationStr = duration.toString();
-                    const metadata = new TextEncoder().encode(
-                        `<?xml version="1.0"?>
-                        <Duration>${durationStr}</Duration>`
-                    );
-                    
-                    // دمج البيانات
-                    const newBuffer = new Uint8Array(buffer.length + metadata.length);
-                    newBuffer.set(buffer);
-                    newBuffer.set(metadata, buffer.length);
-                    
-                    resolve(new Blob([newBuffer], { type: 'video/webm' }));
-                };
-                reader.onerror = reject;
-                reader.readAsArrayBuffer(blob);
-            });
-        }
-
-        function mergeBuffers(bufs, overlap) {
-            const sr = bufs[0].sampleRate, ov = Math.floor(overlap * sr);
-            let total = bufs.reduce((a, b) => a + b.length, 0) - (bufs.length - 1) * ov;
-            const res = audioCtx.createBuffer(bufs[0].numberOfChannels, total, sr);
-            for(let c=0; c<bufs[0].numberOfChannels; c++) {
-                const data = res.getChannelData(c);
-                let cur = 0;
-                bufs.forEach((b, i) => {
-                    const bData = b.getChannelData(c);
-                    for(let j=0; j<bData.length; j++) {
-                        if(i > 0 && j < ov) {
-                            const w = j / ov;
-                            data[cur - ov + j] = (data[cur - ov + j] * (1-w)) + (bData[j] * w);
-                        } else {
-                            data[i > 0 ? cur - ov + j : cur + j] = bData[j];
-                        }
-                    }
-                    cur += bData.length - (i < bufs.length - 1 ? ov : 0);
-                });
-            }
-            return res;
-        }
-
-        function bufferToWav(ab) {
-            let n = ab.numberOfChannels, len = ab.length * n * 2 + 44, buf = new ArrayBuffer(len), view = new DataView(buf), ch = [], i, s, off = 0, p = 0;
-            const u16 = (d) => { view.setUint16(p, d, true); p += 2; };
-            const u32 = (d) => { view.setUint32(p, d, true); p += 4; };
-            u32(0x46464952); u32(len - 8); u32(0x45564157); u32(0x20746d66); u32(16); u16(1); u16(n); u32(ab.sampleRate); u32(ab.sampleRate * 2 * n); u16(n * 2); u16(16); u32(0x61746164); u32(len - p - 4);
-            for (i = 0; i < n; i++) ch.push(ab.getChannelData(i));
-            while (p < len) {
-                for (i = 0; i < n; i++) {
-                    s = Math.max(-1, Math.min(1, ch[i][off]));
-                    s = s < 0 ? s * 0x8000 : s * 0x7FFF;
-                    view.setInt16(p, s, true); p += 2;
-                }
-                off++;
-            }
-            return new Blob([buf], { type: 'audio/wav' });
-        }
-
-        downloadVideo.onclick = () => {
-            if (!finalBlob) return;
+        fixBtn.addEventListener('click', async () => {
+            if (!selectedFile || videoDuration === 0) return;
+            
+            fixBtn.disabled = true;
+            fixBtnText.textContent = '⏳ جاري الإصلاح...';
+            progressContainer.classList.add('show');
+            statusMessage.classList.remove('success', 'error', 'info');
+            downloadBtn.classList.remove('show');
+            
             try {
-                const url = window.URL.createObjectURL(finalBlob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                const extension = finalBlob.type.includes('mp4') ? 'mp4' : 'webm';
-                a.download = `Quran_Video_${Date.now()}.${extension}`;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 100);
-            } catch (e) {
-                console.error("Download failed", e);
+                updateProgress(10, '🔍 تحليل الفيديو الأصلي...');
+                
+                // إنشاء عناصر المعالجة
+                const video = document.createElement('video');
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                video.src = URL.createObjectURL(selectedFile);
+                video.muted = true;
+                
+                await new Promise((resolve, reject) => {
+                    video.onloadedmetadata = () => {
+                        canvas.width = video.videoWidth || 1280;
+                        canvas.height = video.videoHeight || 720;
+                        resolve();
+                    };
+                    video.onerror = reject;
+                });
+                
+                updateProgress(30, '🎬 بدء إعادة الترميز...');
+                
+                // إنشاء stream من canvas
+                const stream = canvas.captureStream(30);
+                
+                // إضافة الصوت إذا كان موجوداً
+                let combinedStream = stream;
+                if (selectedFile.type.startsWith('video/')) {
+                    try {
+                        const audioCtx = new AudioContext();
+                        const source = audioCtx.createMediaElementSource(video);
+                        const dest = audioCtx.createMediaStreamDestination();
+                        source.connect(dest);
+                        source.connect(audioCtx.destination);
+                        
+                        combinedStream = new MediaStream([
+                            ...stream.getVideoTracks(),
+                            ...dest.stream.getAudioTracks()
+                        ]);
+                    } catch (e) {
+                        console.log('لا يمكن إضافة الصوت:', e);
+                    }
+                }
+                
+                // اختيار أفضل صيغة
+                let mimeType = 'video/webm;codecs=vp9,opus';
+                if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.42E01E,mp4a.40.2')) {
+                    mimeType = 'video/mp4;codecs=avc1.42E01E,mp4a.40.2';
+                } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+                    mimeType = 'video/webm;codecs=vp9,opus';
+                }
+                
+                updateProgress(50, `📝 استخدام صيغة: ${mimeType.includes('mp4') ? 'MP4' : 'WebM'}`);
+                
+                const recorder = new MediaRecorder(combinedStream, {
+                    mimeType: mimeType,
+                    videoBitsPerSecond: 10000000,
+                    audioBitsPerSecond: 256000
+                });
+                
+                const chunks = [];
+                
+                recorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+                
+                recorder.onstop = () => {
+                    const type = recorder.mimeType.includes('mp4') ? 'video/mp4' : 'video/webm';
+                    fixedBlob = new Blob(chunks, { type: type });
+                    
+                    updateProgress(100, '✨ اكتمل الإصلاح!');
+                    
+                    const newDuration = videoDuration;
+                    const mins = Math.floor(newDuration / 60);
+                    const secs = Math.floor(newDuration % 60);
+                    
+                    showStatus('success', `✅ تم إصلاح الفيديو بنجاح!\nالمدة: ${mins}:${secs.toString().padStart(2, '0')}\nجاهز للنشر على جميع المنصات`);
+                    
+                    downloadBtn.classList.add('show');
+                    fixBtn.disabled = false;
+                    fixBtnText.textContent = '🔧 إعادة الإصلاح';
+                    
+                    // تنظيف
+                    URL.revokeObjectURL(video.src);
+                    
+                    setTimeout(() => {
+                        progressContainer.classList.remove('show');
+                    }, 2000);
+                };
+                
+                // بدء التسجيل
+                recorder.start(1000);
+                video.currentTime = 0;
+                await video.play();
+                
+                // رسم الإطارات
+                const drawFrame = () => {
+                    if (video.ended || video.currentTime >= videoDuration) {
+                        recorder.stop();
+                        return;
+                    }
+                    
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    const progress = Math.min(50 + ((video.currentTime / videoDuration) * 50), 99);
+                    updateProgress(progress, `🎥 معالجة الإطار ${Math.floor(video.currentTime)}/${Math.floor(videoDuration)} ثانية`);
+                    
+                    requestAnimationFrame(drawFrame);
+                };
+                
+                drawFrame();
+                
+            } catch (error) {
+                console.error('خطأ:', error);
+                showStatus('error', '❌ فشل الإصلاح: ' + error.message);
+                fixBtn.disabled = false;
+                fixBtnText.textContent = '🔧 حاول مرة أخرى';
+                progressContainer.classList.remove('show');
             }
-        };
-        init();
+        });
+
+        function updateProgress(percent, text) {
+            progressFill.style.width = percent + '%';
+            progressText.textContent = text;
+        }
+
+        function showStatus(type, message) {
+            statusMessage.className = 'status-message ' + type;
+            statusMessage.textContent = message;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        downloadBtn.addEventListener('click', () => {
+            if (!fixedBlob) return;
+            
+            const url = window.URL.createObjectURL(fixedBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            const ext = fixedBlob.type.includes('mp4') ? 'mp4' : 'webm';
+            const originalName = selectedFile.name.replace(/\.[^/.]+$/, "");
+            a.download = `${originalName}_fixed.${ext}`;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        });
     </script>
 </body>
 </html>
