@@ -1,497 +1,293 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مصلح ملفات الفيديو - إصلاح المدة 0:00</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>صانع الفيديو المرئي الاحترافي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            direction: rtl;
-        }
-        
-        .container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 650px;
-            width: 100%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        h1 {
-            color: #fff;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        
-        .subtitle {
-            color: #a0a0a0;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        
-        .upload-area {
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 15px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.02);
-            margin-bottom: 20px;
-        }
-        
-        .upload-area:hover {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
-        }
-        
-        .upload-icon { font-size: 50px; margin-bottom: 15px; }
-        .upload-text { color: #fff; font-size: 16px; margin-bottom: 5px; }
-        .upload-hint { color: #a0a0a0; font-size: 12px; }
-        
-        #fileInput { display: none; }
-        
-        .file-info {
-            background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .file-info.show { display: block; }
-        .file-name { color: #fff; font-size: 14px; word-break: break-all; }
-        .file-size { color: #a0a0a0; font-size: 12px; }
-        
-        .video-preview {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-            max-height: 300px;
-            background: #000;
-        }
-        
-        .video-preview.show { display: block; }
-        
-        .btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Tajawal', sans-serif;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #11998e, #38ef7d);
-            color: white;
-            display: none;
-        }
-        
-        .btn-success.show { display: block; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        .progress-container {
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .progress-container.show { display: block; }
-        
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        
-        .progress-text { color: #a0a0a0; text-align: center; font-size: 14px; }
-        
-        .status-message {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .status-message.success {
-            display: block;
-            background: rgba(56, 239, 125, 0.1);
-            border: 1px solid rgba(56, 239, 125, 0.3);
-            color: #38ef7d;
-        }
-        
-        .status-message.error {
-            display: block;
-            background: rgba(239, 56, 56, 0.1);
-            border: 1px solid rgba(239, 56, 56, 0.3);
-            color: #ef3838;
-        }
-        
-        .status-message.info {
-            display: block;
-            background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            color: #667eea;
-        }
-        
-        .info-box {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 30px;
-        }
-        
-        .info-box h3 { color: #667eea; margin-bottom: 15px; font-size: 18px; }
-        
-        .info-box ul {
-            color: #a0a0a0;
-            padding-right: 20px;
-        }
-        
-        .info-box li { margin-bottom: 8px; font-size: 14px; line-height: 1.6; }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Amiri:wght@400;700&display=swap');
+        :root { --deep-emerald: #022c22; --royal-gold: #c5a059; --soft-cream: #fdfaf3; }
+        body { font-family: 'Amiri', serif; min-height: 100vh; background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); color: var(--soft-cream); margin: 0; display: flex; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
+        .main-wrapper { width: 100%; max-width: 850px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 30px; padding: 25px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 20px; }
+        .controls-panel { background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 20px; border: 1px solid rgba(197, 160, 89, 0.2); order: 2; }
+        .screen-container { width: 100%; position: relative; border-radius: 16px; border: 2px solid rgba(197, 160, 89, 0.2); overflow: hidden; display: flex; align-items: center; justify-content: center; order: 1; transition: all 0.5s ease; background: #000; aspect-ratio: 16/9; }
+        .canvas-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
+        #videoCanvas { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; object-fit: contain; }
+        .ratio-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .ratio-item { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(197, 160, 89, 0.2); border-radius: 12px; width: 60px; height: 60px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        .ratio-item.active { background: rgba(197, 160, 89, 0.2); border-color: var(--royal-gold); }
+        .shape { border: 2px solid currentColor; border-radius: 2px; opacity: 0.8; }
+        .shape-16-9 { width: 30px; height: 17px; }
+        .shape-9-16 { width: 17px; height: 30px; }
+        .shape-1-1 { width: 24px; height: 24px; }
+        .btn-generate { background: linear-gradient(45deg, #c5a059, #e2c28a); color: #022c22; font-weight: 800; padding: 15px; font-size: 16px; border-radius: 12px; width: 100%; cursor: pointer; border: none; transition: all 0.3s; position: relative; overflow: hidden; }
+        .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+        .recording-indicator { position: absolute; top: 15px; right: 15px; display: none; align-items: center; gap: 8px; background: rgba(220, 38, 38, 0.8); padding: 5px 12px; border-radius: 20px; font-size: 12px; color: white; z-index: 50; }
+        .recording-dot { width: 8px; height: 8px; background: white; border-radius: 50%; animation: blink 1s infinite; }
+        .download-link { background: #10b981; color: white; padding: 12px; border-radius: 12px; display: none; text-align: center; text-decoration: none; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        #modalOverlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(8px); }
+        .modal-box { background: #022c22; border: 2px solid var(--royal-gold); border-radius: 24px; padding: 30px; width: 90%; max-width: 420px; text-align: center; }
+        .platform-option { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(197, 160, 89, 0.3); padding: 15px; border-radius: 15px; margin: 12px 0; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: bold; }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: rgba(255,255,255,0.3); width: 0%; transition: width 0.3s; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔧 مصلح فيديوهات</h1>
-        <p class="subtitle">أصلح مشكلة المدة 0:00 في ملفات MP4 و WebM</p>
-        
-        <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">📁</div>
-            <div class="upload-text">اختر ملف فيديو أو اسحبه هنا</div>
-            <div class="upload-hint">MP4 أو WebM - سيتم إصلاح المدة تلقائياً</div>
-        </div>
-        
-        <input type="file" id="fileInput" accept="video/*">
-        
-        <div class="file-info" id="fileInfo">
-            <div class="file-name" id="fileName"></div>
-            <div class="file-size" id="fileSize"></div>
-        </div>
-        
-        <video class="video-preview" id="videoPreview" controls></video>
-        
-        <button class="btn btn-primary" id="fixBtn" disabled>
-            <span id="fixBtnText">🔧 بدء الإصلاح</span>
-        </button>
-        
-        <div class="progress-container" id="progressContainer">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+    <div id="modalOverlay">
+        <div class="modal-box">
+            <h2 class="text-xl font-bold mb-4" style="color: var(--royal-gold)">اختر المنصة والترميز</h2>
+            <div class="platform-option" onclick="processWithPlatform('tiktok')">
+                <i class="fab fa-tiktok"></i> تيك توك (MP4)
             </div>
-            <div class="progress-text" id="progressText">جاري المعالجة...</div>
-        </div>
-        
-        <div class="status-message" id="statusMessage"></div>
-        
-        <button class="btn btn-success" id="downloadBtn">
-            ⬇️ تحميل الفيديو المُصلَح
-        </button>
-        
-        <div class="info-box">
-            <h3>💡 كيف تعمل الأداة؟</h3>
-            <ul>
-                <li>🎯 <strong>اختر الفيديو:</strong> أي ملف MP4 أو WebM</li>
-                <li>🔍 <strong>تحليل تلقائي:</strong> نكتشف المدة الحقيقية للفيديو</li>
-                <li>🔧 <strong>إعادة ترميز:</strong> ننشئ نسخة جديدة بمدة صحيحة</li>
-                <li>✅ <strong>جاهز للنشر:</strong> الفيديو الجديد يعمل على جميع المنصات</li>
-            </ul>
+            <div class="platform-option" onclick="processWithPlatform('others')">
+                <i class="fab fa-instagram"></i> <i class="fab fa-youtube ml-2"></i> انستغرام / يوتيوب (WebM)
+            </div>
+            <button onclick="closeModal()" class="mt-4 text-xs text-gray-400 underline">إلغاء</button>
         </div>
     </div>
 
+    <div class="main-wrapper">
+        <div class="screen-container" id="container">
+            <div id="recIndicator" class="recording-indicator">
+                <div class="recording-dot"></div>
+                جاري التسجيل...
+            </div>
+            <div class="canvas-wrapper">
+                <canvas id="videoCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <div id="uploadBox" class="mb-6 flex flex-col items-center justify-center border-2 border-dashed border-slate-600 rounded-xl p-8 hover:border-blue-500 transition-colors cursor-pointer" onclick="document.getElementById('audioInput').click()">
+                <i class="fas fa-file-audio text-4xl mb-3 text-blue-400"></i>
+                <span id="fileName" class="text-lg text-slate-300">ارفع ملف الصوت للبدء</span>
+                <input type="file" id="audioInput" accept="audio/*" class="hidden" onchange="handleAudio(event)">
+            </div>
+
+            <div class="ratio-grid" id="ratioContainer">
+                <div class="ratio-item active" data-ratio="16/9"><div class="shape shape-16-9"></div></div>
+                <div class="ratio-item" data-ratio="9/16"><div class="shape shape-9-16"></div></div>
+                <div class="ratio-item" data-ratio="1/1"><div class="shape shape-1-1"></div></div>
+            </div>
+            
+            <button id="startBtn" class="btn-generate" disabled>
+                <i class="fas fa-magic ml-2"></i>
+                <span id="btnText">بانتظار الملف الصوتي</span>
+                <div id="loadingProgress" class="progress-bar"></div>
+            </button>
+
+            <div id="downloadBtn" class="download-link">
+                <i class="fas fa-download ml-2"></i> تحميل المقطع النهائي
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
     <script>
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const videoPreview = document.getElementById('videoPreview');
-        const fixBtn = document.getElementById('fixBtn');
-        const fixBtnText = document.getElementById('fixBtnText');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const statusMessage = document.getElementById('statusMessage');
+        const config = {
+            base: "https://raw.githubusercontent.com/BlidaServices/Quranative/refs/heads/main/pictures/",
+            totalImages: 271,
+            slideDuration: 7000,
+            fadeDuration: 1500
+        };
+
+        const canvas = document.getElementById('videoCanvas');
+        const ctx = canvas.getContext('2d');
+        const audio = document.getElementById('audioPlayer');
+        const startBtn = document.getElementById('startBtn');
         const downloadBtn = document.getElementById('downloadBtn');
-        
-        let selectedFile = null;
-        let fixedBlob = null;
-        let videoDuration = 0;
+        const recIndicator = document.getElementById('recIndicator');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const loadingProgress = document.getElementById('loadingProgress');
 
-        // فتح نافذة الاختيار
-        uploadArea.addEventListener('click', () => fileInput.click());
+        let currentRatio = "16/9";
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+        let activePlatform = 'others';
+        let finalBlob = null;
+        let cachedImages = new Map();
+        let randomSequence = [];
 
-        // السحب والإفلات
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = '#667eea';
-        });
+        function updateCanvasSize() {
+            if (currentRatio === "16/9") { canvas.width = 1280; canvas.height = 720; }
+            else if (currentRatio === "9/16") { canvas.width = 720; canvas.height = 1280; }
+            else if (currentRatio === "1/1") { canvas.width = 1080; canvas.height = 1080; }
+            document.getElementById('container').style.aspectRatio = currentRatio;
+        }
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-            const file = e.dataTransfer.files[0];
-            if (file) handleFile(file);
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) handleFile(file);
-        });
-
-        function handleFile(file) {
-            if (!file.type.startsWith('video/')) {
-                showStatus('error', '❌ الرجاء اختيار ملف فيديو صالح');
-                return;
-            }
-
-            selectedFile = file;
+        async function preloadAllImages(sequence) {
+            startBtn.disabled = true;
+            let loaded = 0;
+            const uniqueIds = [...new Set(sequence)];
             
-            // عرض المعلومات
-            fileName.textContent = `📄 ${file.name}`;
-            fileSize.textContent = `📦 الحجم: ${formatFileSize(file.size)}`;
-            fileInfo.classList.add('show');
-            
-            // معاينة الفيديو
-            const url = URL.createObjectURL(file);
-            videoPreview.src = url;
-            videoPreview.classList.add('show');
-            
-            // الحصول على المدة الحقيقية
-            videoPreview.onloadedmetadata = () => {
-                videoDuration = videoPreview.duration;
-                const minutes = Math.floor(videoDuration / 60);
-                const seconds = Math.floor(videoDuration % 60);
-                
-                if (videoDuration > 0) {
-                    showStatus('info', `📊 المدة الحقيقية للفيديو: ${minutes}:${seconds.toString().padStart(2, '0')} - جاهز للإصلاح`);
+            for (const id of uniqueIds) {
+                if (!cachedImages.has(id)) {
+                    await new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.src = `${config.base}${id}.jpg`;
+                        img.onload = () => {
+                            cachedImages.set(id, img);
+                            loaded++;
+                            loadingProgress.style.width = `${(loaded / uniqueIds.length) * 100}%`;
+                            resolve();
+                        };
+                        img.onerror = () => {
+                            loaded++;
+                            resolve();
+                        };
+                    });
                 } else {
-                    showStatus('error', '⚠️ لم يتم اكتشاف مدة صالحة للفيديو');
+                    loaded++;
+                    loadingProgress.style.width = `${(loaded / uniqueIds.length) * 100}%`;
                 }
-                
-                fixBtn.disabled = false;
-                fixBtnText.textContent = '🔧 بدء الإصلاح';
-                downloadBtn.classList.remove('show');
-            };
-            
-            videoPreview.onerror = () => {
-                showStatus('error', '❌ تعذر تحميل الفيديو - قد يكون الملف تالفاً');
-                fixBtn.disabled = true;
-            };
-        }
-
-        fixBtn.addEventListener('click', async () => {
-            if (!selectedFile || videoDuration === 0) return;
-            
-            fixBtn.disabled = true;
-            fixBtnText.textContent = '⏳ جاري الإصلاح...';
-            progressContainer.classList.add('show');
-            statusMessage.classList.remove('success', 'error', 'info');
-            downloadBtn.classList.remove('show');
-            
-            try {
-                updateProgress(10, '🔍 تحليل الفيديو الأصلي...');
-                
-                // إنشاء عناصر المعالجة
-                const video = document.createElement('video');
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                video.src = URL.createObjectURL(selectedFile);
-                video.muted = true;
-                
-                await new Promise((resolve, reject) => {
-                    video.onloadedmetadata = () => {
-                        canvas.width = video.videoWidth || 1280;
-                        canvas.height = video.videoHeight || 720;
-                        resolve();
-                    };
-                    video.onerror = reject;
-                });
-                
-                updateProgress(30, '🎬 بدء إعادة الترميز...');
-                
-                // إنشاء stream من canvas
-                const stream = canvas.captureStream(30);
-                
-                // إضافة الصوت إذا كان موجوداً
-                let combinedStream = stream;
-                if (selectedFile.type.startsWith('video/')) {
-                    try {
-                        const audioCtx = new AudioContext();
-                        const source = audioCtx.createMediaElementSource(video);
-                        const dest = audioCtx.createMediaStreamDestination();
-                        source.connect(dest);
-                        source.connect(audioCtx.destination);
-                        
-                        combinedStream = new MediaStream([
-                            ...stream.getVideoTracks(),
-                            ...dest.stream.getAudioTracks()
-                        ]);
-                    } catch (e) {
-                        console.log('لا يمكن إضافة الصوت:', e);
-                    }
-                }
-                
-                // اختيار أفضل صيغة
-                let mimeType = 'video/webm;codecs=vp9,opus';
-                if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.42E01E,mp4a.40.2')) {
-                    mimeType = 'video/mp4;codecs=avc1.42E01E,mp4a.40.2';
-                } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
-                    mimeType = 'video/webm;codecs=vp9,opus';
-                }
-                
-                updateProgress(50, `📝 استخدام صيغة: ${mimeType.includes('mp4') ? 'MP4' : 'WebM'}`);
-                
-                const recorder = new MediaRecorder(combinedStream, {
-                    mimeType: mimeType,
-                    videoBitsPerSecond: 10000000,
-                    audioBitsPerSecond: 256000
-                });
-                
-                const chunks = [];
-                
-                recorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) chunks.push(e.data);
-                };
-                
-                recorder.onstop = () => {
-                    const type = recorder.mimeType.includes('mp4') ? 'video/mp4' : 'video/webm';
-                    fixedBlob = new Blob(chunks, { type: type });
-                    
-                    updateProgress(100, '✨ اكتمل الإصلاح!');
-                    
-                    const newDuration = videoDuration;
-                    const mins = Math.floor(newDuration / 60);
-                    const secs = Math.floor(newDuration % 60);
-                    
-                    showStatus('success', `✅ تم إصلاح الفيديو بنجاح!\nالمدة: ${mins}:${secs.toString().padStart(2, '0')}\nجاهز للنشر على جميع المنصات`);
-                    
-                    downloadBtn.classList.add('show');
-                    fixBtn.disabled = false;
-                    fixBtnText.textContent = '🔧 إعادة الإصلاح';
-                    
-                    // تنظيف
-                    URL.revokeObjectURL(video.src);
-                    
-                    setTimeout(() => {
-                        progressContainer.classList.remove('show');
-                    }, 2000);
-                };
-                
-                // بدء التسجيل
-                recorder.start(1000);
-                video.currentTime = 0;
-                await video.play();
-                
-                // رسم الإطارات
-                const drawFrame = () => {
-                    if (video.ended || video.currentTime >= videoDuration) {
-                        recorder.stop();
-                        return;
-                    }
-                    
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    const progress = Math.min(50 + ((video.currentTime / videoDuration) * 50), 99);
-                    updateProgress(progress, `🎥 معالجة الإطار ${Math.floor(video.currentTime)}/${Math.floor(videoDuration)} ثانية`);
-                    
-                    requestAnimationFrame(drawFrame);
-                };
-                
-                drawFrame();
-                
-            } catch (error) {
-                console.error('خطأ:', error);
-                showStatus('error', '❌ فشل الإصلاح: ' + error.message);
-                fixBtn.disabled = false;
-                fixBtnText.textContent = '🔧 حاول مرة أخرى';
-                progressContainer.classList.remove('show');
             }
-        });
-
-        function updateProgress(percent, text) {
-            progressFill.style.width = percent + '%';
-            progressText.textContent = text;
+            startBtn.disabled = false;
+            document.getElementById('btnText').textContent = "جاهز للتوليد";
+            loadingProgress.style.width = "0%";
         }
 
-        function showStatus(type, message) {
-            statusMessage.className = 'status-message ' + type;
-            statusMessage.textContent = message;
+        function handleAudio(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                audio.src = url;
+                document.getElementById('fileName').textContent = file.name;
+                
+                audio.onloadedmetadata = () => {
+                    const duration = audio.duration * 1000;
+                    const requiredSlides = Math.ceil(duration / config.slideDuration) + 2;
+                    randomSequence = [];
+                    for(let i=0; i<requiredSlides; i++) {
+                        randomSequence.push(Math.floor(Math.random() * config.totalImages) + 1);
+                    }
+                    document.getElementById('btnText').textContent = "جاري تحميل الصور...";
+                    preloadAllImages(randomSequence);
+                };
+            }
         }
 
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
-            return (bytes / 1048576).toFixed(2) + ' MB';
+        function getKenBurnsEffect(progress, type, img) {
+            const baseScale = Math.max(canvas.width / img.width, canvas.height / img.height);
+            let scale, tx = 0, ty = 0;
+            const phase = type % 3;
+
+            if (phase === 0) { 
+                scale = baseScale * (1 + progress * 0.2);
+                tx = progress * 40; ty = progress * 30;
+            } else if (phase === 1) {
+                scale = baseScale * (1.2 - progress * 0.2);
+                tx = -progress * 40; ty = -progress * 30;
+            } else {
+                scale = baseScale * 1.15;
+                tx = (progress - 0.5) * 60; ty = (0.5 - progress) * 40;
+            }
+            return { scale, tx, ty };
         }
 
-        downloadBtn.addEventListener('click', () => {
-            if (!fixedBlob) return;
+        function drawLayer(img, progress, type, alpha) {
+            if (!img) return;
+            const t = getKenBurnsEffect(progress, type, img);
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(canvas.width/2 + t.tx, canvas.height/2 + t.ty);
+            ctx.scale(t.scale, t.scale);
+            ctx.drawImage(img, -img.width/2, -img.height/2);
+            ctx.restore();
+        }
+
+        function renderFrame() {
+            if (!isRecording) return;
             
-            const url = window.URL.createObjectURL(fixedBlob);
+            const time = audio.currentTime * 1000;
+            const idx = Math.floor(time / config.slideDuration);
+            const slideTime = time % config.slideDuration;
+            
+            const img1 = cachedImages.get(randomSequence[idx]);
+            const img2 = cachedImages.get(randomSequence[idx + 1]);
+
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (slideTime > config.slideDuration - config.fadeDuration) {
+                const fade = (slideTime - (config.slideDuration - config.fadeDuration)) / config.fadeDuration;
+                const easeFade = fade < 0.5 ? 2 * fade * fade : 1 - Math.pow(-2 * fade + 2, 2) / 2;
+                
+                if (img1) drawLayer(img1, slideTime / config.slideDuration, idx, 1 - easeFade);
+                if (img2) drawLayer(img2, (slideTime - config.slideDuration) / config.slideDuration, idx + 1, easeFade);
+                else if (img1) drawLayer(img1, slideTime / config.slideDuration, idx, 1);
+            } else {
+                if (img1) drawLayer(img1, slideTime / config.slideDuration, idx, 1);
+            }
+
+            requestAnimationFrame(renderFrame);
+        }
+
+        startBtn.onclick = () => modalOverlay.style.display = 'flex';
+        function closeModal() { modalOverlay.style.display = 'none'; }
+
+        async function processWithPlatform(platform) {
+            activePlatform = platform;
+            closeModal();
+            isRecording = true;
+            recordedChunks = [];
+            
+            const stream = canvas.captureStream(30);
+            const aCtx = new AudioContext();
+            const source = aCtx.createMediaElementSource(audio);
+            const dest = aCtx.createMediaStreamDestination();
+            source.connect(dest); source.connect(aCtx.destination);
+            const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+            
+            let mime = activePlatform === 'tiktok' ? 'video/mp4;codecs=avc1.42E01E,mp4a.40.2' : 'video/webm;codecs=vp9,opus';
+            if (!MediaRecorder.isTypeSupported(mime)) mime = activePlatform === 'tiktok' ? 'video/mp4' : 'video/webm';
+            if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+
+            mediaRecorder = new MediaRecorder(combined, { mimeType: mime, videoBitsPerSecond: 15000000 });
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                finalBlob = new Blob(recordedChunks, { type: mime.split(';')[0] });
+                downloadBtn.style.display = "block";
+                recIndicator.style.display = "none";
+                startBtn.disabled = false;
+                isRecording = false;
+                audio.pause();
+                audio.currentTime = 0;
+            };
+
+            audio.currentTime = 0;
+            audio.play();
+            mediaRecorder.start(100);
+            recIndicator.style.display = "flex";
+            startBtn.disabled = true;
+            renderFrame();
+        }
+
+        audio.onended = () => { if (mediaRecorder?.state === "recording") mediaRecorder.stop(); };
+        downloadBtn.onclick = () => {
+            const url = URL.createObjectURL(finalBlob);
             const a = document.createElement('a');
             a.href = url;
-            
-            const ext = fixedBlob.type.includes('mp4') ? 'mp4' : 'webm';
-            const originalName = selectedFile.name.replace(/\.[^/.]+$/, "");
-            a.download = `${originalName}_fixed.${ext}`;
-            
-            document.body.appendChild(a);
+            a.download = `Quran_Video_${Date.now()}.${activePlatform === 'tiktok' ? 'mp4' : 'webm'}`;
             a.click();
-            
-            setTimeout(() => {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }, 100);
+        };
+
+        document.querySelectorAll('.ratio-item').forEach(item => {
+            item.onclick = () => {
+                if (isRecording) return;
+                document.querySelector('.ratio-item.active').classList.remove('active');
+                item.classList.add('active');
+                currentRatio = item.dataset.ratio;
+                updateCanvasSize();
+            };
         });
+
+        updateCanvasSize();
     </script>
 </body>
 </html>
